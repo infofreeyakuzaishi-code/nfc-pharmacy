@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>服用ログ記録中...</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+    <p>記録しています。少々お待ちください...</p>
+
+    <script>
+        async function main() {
+            await liff.init({ liffId: "2009757402-6XKBiLYI" }); // LINE Developersで取得
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            } else {
+                const profile = await liff.getProfile();
+                
+                // GASのURLにデータを送信
+                await fetch("https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        userId: profile.userId,
+                        item: "マルチビタミン" // タグごとにここを変えてURLを分ける
+                    })
+                });
+
+                // 記録が終わったら自動でLINEを閉じる
+                liff.closeWindow();
+            }
+        }
+        main();
+    </script>
+</body>
+</html>
