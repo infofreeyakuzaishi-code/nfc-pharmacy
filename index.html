@@ -10,23 +10,34 @@
 
     <script>
         async function main() {
-            await liff.init({ liffId: "2009757402-6XKBiLYI" }); // LINE Developersで取得
-            if (!liff.isLoggedIn()) {
-                liff.login();
-            } else {
+            try {
+                await liff.init({ liffId: "あなたのLIFF_ID" }); // ここはあなたのIDに
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
                 const profile = await liff.getProfile();
                 
-                // GASのURLにデータを送信
-                await fetch("https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec", {
+                // 送信を試みる（成否にかかわらず進むように設定）
+                fetch("あなたのGASウェブアプリURL", {
                     method: "POST",
+                    mode: 'no-cors', // これを入れるとエラーで止まりにくくなります
                     body: JSON.stringify({
                         userId: profile.userId,
-                        item: "マルチビタミン" // タグごとにここを変えてURLを分ける
+                        item: "マルチビタミン"
                     })
                 });
 
-                // 記録が終わったら自動でLINEを閉じる
-                liff.closeWindow();
+                // 2秒だけ待ってから閉じる（安心感のため）
+                setTimeout(() => {
+                    liff.closeWindow();
+                }, 2000);
+
+            } catch (error) {
+                // エラーが起きてもとりあえず3秒で閉じる
+                setTimeout(() => {
+                    liff.closeWindow();
+                }, 3000);
             }
         }
         main();
