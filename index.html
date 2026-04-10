@@ -54,7 +54,7 @@
                 }, 1500);
 
             } catch (error) {
-                statusTag.innerText = "エラーが発生しました";
+                statusTag.innerText = "エラー: " + error.message;
                 console.error(error);
                 setTimeout(() => { liff.closeWindow(); }, 3000);
             }
