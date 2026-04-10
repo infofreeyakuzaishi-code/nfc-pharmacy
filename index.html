@@ -7,7 +7,7 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .container { text-align: center; background: white; padding: 20px; border-radius: 12px; shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { text-align: center; background: white; padding: 20px; border-radius: 12px; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -22,40 +22,37 @@
         async function main() {
             const statusTag = document.getElementById("status");
             try {
-                // 1. LIFFの初期化 (あなたのIDに書き換えてください)
-                await liff.init({ liffId: "2009757402-6XKBiLYl" }); 
+                // 1. LIFF初期化
+                await liff.init({ liffId: "2009757402-6XKBiLYI" }); 
 
                 if (!liff.isLoggedIn()) {
                     liff.login();
                     return;
                 }
 
-                // プロフィール取得
-                const profile = await liff.getProfile();
-                statusTag.innerText = profile.displayName + " さんとして記録中...";
+                // URLから商品名を読み取る (例: ?item=チョコラBB)
+                const urlParams = new URLSearchParams(window.location.search);
+                let itemName = urlParams.get('item') || "未設定の商品";
 
-                // 2. GASへデータを送信 (あなたのGAS URLに書き換えてください)
+                const profile = await liff.getProfile();
+                statusTag.innerText = itemName + " を記録中...";
+
+                // 2. GASへ送信
                 await fetch("https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec", {
                     method: "POST",
                     mode: 'no-cors',
-                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         userId: profile.userId,
                         displayName: profile.displayName,
-                        item: "マルチビタミン" // 必要に応じてここを変えてください
+                        item: itemName // URLから取得した名前を送る
                     })
                 });
 
-                statusTag.innerText = "記録しました！";
-
-                // 3. 1.5秒後に自動で閉じる
-                setTimeout(() => {
-                    liff.closeWindow();
-                }, 1500);
+                statusTag.innerText = itemName + " を記録しました！";
+                setTimeout(() => { liff.closeWindow(); }, 1500);
 
             } catch (error) {
-                statusTag.innerText = "エラー: " + error.message;
-                console.error(error);
+                statusTag.innerText = "エラー: " + error;
                 setTimeout(() => { liff.closeWindow(); }, 3000);
             }
         }
