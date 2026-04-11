@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>服薬記録カレンダー</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; }
+    #container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #2c3e50; }
+    
+    /* カレンダーヘッダー */
+    #calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    #month-label { font-size: 1.2em; font-weight: bold; }
+    button { background-color: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #2980b9; }
+
+    /* カレンダーグリッド */
+    #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+    .day-header { font-weight: bold; background-color: #ecf0f1; padding: 10px; border-radius: 5px; }
+    .day { position: relative; padding: 10px 0; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #fff; cursor: pointer; transition: 0.2s; }
+    .day:hover { background-color: #ecf0f1; }
+    .today { background-color: #e3f2fd; font-weight: bold; }
+    .other-month { color: #ccc; }
+    .has-record::after { content: '✅'; position: absolute; bottom: 3px; right: 3px; font-size: 1.2em; }
+    .active { background-color: #3498db; color: white; } /* 選択した日付 */
+
+    /* 詳細ポップアップ */
+    #details { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 10px; background-color: #fafafa; display: none; }
+    #details h3 { margin-top: 0; color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+    #details ul { list-style: none; padding: 0; }
+    #details li { padding: 8px; border-bottom: 1px solid #eee; }
+    #loading { text-align: center; margin-top: 50px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="loading">記録を読み込み中...</div>
+
+  <div id="container" style="display: none;">
+    <h2>服薬記録カレンダー</h2>
+    <div id="calendar-header">
+      <button id="prev-month">&lt; 前月</button>
+      <div id="month-label"></div>
+      <button id="next-month">翌月 &gt;</button>
+    </div>
+    <div id="calendar-grid">
+      <div class="day-header">日</div><div class="day-header">月</div><div class="day-header">火</div>
+      <div class="day-header">水</div><div class="day-header">木</div><div class="day-header">金</div><div class="day-header">土</div>
+    </div>
+
+    <div id="details">
+      <h3 id="details-date"></h3>
+      <ul id="details-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    // ★【重要】あなたの最新のGASのWebアプリURLに書き換えてください
+    const gasUrl = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+
+    let currentDate = new Date(); // 表示中の月
+    let allRecords = {}; // GASから取得した全データ
+
+    // 1. LIFFの初期化
+    liff.init({ liffId: "your-liff-id" }).then(() => {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        liff.getProfile().then(profile => {
+          const userId = profile.userId;
+          loadRecords(userId); // データをロード
+        });
+      }
+    });
+
+    // 2. GASからUserIDごとのデータを取得
+    function loadRecords(userId) {
+      fetch(`${gasUrl}?userId=${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          allRecords = data; // データを保存
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('container').style.display = 'block';
+          renderCalendar(); // カレンダーを描画
+        });
+    }
+
+    // 3. カレンダーの描画
+    function renderCalendar() {
+      const headerLabel = document.getElementById('month-label');
+      const grid = document.getElementById('calendar-grid');
+      const prevBtn = document.getElementById('prev-month');
+      const nextBtn = document.getElementById('next-month');
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      headerLabel.textContent = `${year}年 ${month + 1}月`;
+
+      // 既存の日付セルをクリア（ヘッダー以外）
+      const dayCells = grid.querySelectorAll('.day');
+      dayCells.forEach(cell => cell.remove());
+
+      const firstDay = new Date(year, month, 1).getDay(); // 月の最初の曜日
+      const daysInMonth = new Date(year, month + 1, 0).getDate(); // 月の総日数
+      const today = new Date();
+
+      // カレンダーの日付生成
+      for (let i = 0; i < 42; i++) { // 6週間分
+        const dayDiv = document.createElement('div');
+        dayDiv.classList.add('day');
+        
+        const dayNumber = i - firstDay + 1;
+        const cellDate = new Date(year, month, dayNumber);
+        
+        // 当月以外の日付
+        if (dayNumber <= 0 || dayNumber > daysInMonth) {
+          dayDiv.classList.add('other-month');
+        } else {
+          dayDiv.textContent = dayNumber;
+
+          // ✅記録の有無チェック
+          const yyyymmdd = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+          if (allRecords[yyyymmdd]) {
+            dayDiv.classList.add('has-record'); // CSSで✅を表示
+          }
+
+          // 今日の日付
+          if (cellDate.toDateString() === today.toDateString()) {
+            dayDiv.classList.add('today');
+          }
+
+          // タップイベント
+          dayDiv.addEventListener('click', () => showDetails(yyyymmdd, dayDiv));
+        }
+        grid.appendChild(dayDiv);
+      }
+    }
+
+    // 4. 日付タップ時に詳細を表示
+    function showDetails(yyyymmdd, clickedDiv) {
+      // 選択した日付を目立たせる（CSS）
+      const allDays = document.querySelectorAll('.day');
+      allDays.forEach(day => day.classList.remove('active'));
+      clickedDiv.classList.add('active');
+
+      const records = allRecords[yyyymmdd];
+      const detailsDiv = document.getElementById('details');
+      const detailsDate = document.getElementById('details-date');
+      const detailsList = document.getElementById('details-list');
+
+      if (records) {
+        detailsDate.textContent = `${yyyymmdd} の服用記録`;
+        detailsList.innerHTML = ''; // リストをクリア
+        records.forEach(rec => {
+          const li = document.createElement('li');
+          li.textContent = `⏰ ${rec.time} - 【${rec.item}】`;
+          detailsList.appendChild(li);
+        });
+        detailsDiv.style.display = 'block'; // 表示
+      } else {
+        detailsDiv.style.display = 'none'; // 非表示
+      }
+    }
+
+    // 前月・翌月ボタンのイベント
+    document.getElementById('prev-month').addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+    document.getElementById('next-month').addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+  </script>
+</body>
+</html>
