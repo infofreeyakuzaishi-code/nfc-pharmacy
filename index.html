@@ -1,23 +1,49 @@
-// GitHub側の処理イメージ（LIFF使用）
-liff.init({ liffId: "2009757402-6XKBiLYl" }).then(() => {
-  if (!liff.isLoggedIn()) {
-    liff.login();
-  } else {
-    liff.getProfile().then(profile => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const itemID = urlParams.get('item');
-      
-      // GASにデータを送信
-      fetch("https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec", {
-        method: "POST",
-        body: JSON.stringify({
-          item: itemID,
-          userId: profile.userId,
-          displayName: profile.displayName
-        })
-      }).then(() => {
-        liff.closeWindow(); // 送信したら閉じる
-      });
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ろぎーシール記録</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+    <p>記録中...</p>
+  </div>
+
+  <script>
+    // 1. LIFFの初期化
+    liff.init({ liffId: "2009757402-6XKBiLYl" }).then(() => {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        liff.getProfile().then(profile => {
+          const urlParams = new URLSearchParams(window.location.search);
+          const itemID = urlParams.get('item');
+          
+          // 2. GASのURLを最新に差し替えて送信
+          // ※【重要】下のURLを必ずあなたの最新のGAS URLに書き換えてください
+          const gasUrl = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+
+          fetch(gasUrl, {
+            method: "POST",
+            mode: "no-cors", // ブラウザのエラー回避用
+            body: JSON.stringify({
+              item: itemID,
+              userId: profile.userId,
+              displayName: profile.displayName
+            })
+          }).then(() => {
+            // 3. 送信完了したらLINEの画面を閉じる
+            liff.closeWindow();
+          }).catch((error) => {
+            alert("送信エラー: " + error);
+          });
+        });
+      }
+    }).catch((err) => {
+      console.log('LIFF初期化失敗', err);
     });
-  }
-});
+  </script>
+</body>
+</html>
