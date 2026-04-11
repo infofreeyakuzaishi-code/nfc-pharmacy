@@ -3,114 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>服薬記録カレンダー</title>
+  <title>服薬カレンダー</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; background-color: #f4f7f6; margin: 0; padding: 10px; }
-    #container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #2c3e50; }
-    #calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    body { font-family: sans-serif; margin: 0; padding: 10px; background: #f4f7f6; }
+    #container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; display: none; }
     #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-    .day-header { font-weight: bold; background-color: #ecf0f1; padding: 10px; border-radius: 5px; }
-    .day { position: relative; padding: 15px 0; border: 1px solid #e0e0e0; border-radius: 5px; cursor: pointer; height: 50px; }
-    .today { background-color: #e3f2fd; font-weight: bold; border: 2px solid #3498db; }
-    .other-month { color: #ccc; }
-    .has-record::after { content: '✅'; position: absolute; bottom: 5px; right: 5px; font-size: 1.2em; }
-    #details { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 10px; background-color: #fafafa; display: none; }
-    #loading { text-align: center; margin-top: 100px; font-weight: bold; font-size: 1.2em; color: #7f8c8d; }
+    .day { height: 60px; border: 1px solid #eee; border-radius: 8px; position: relative; padding-top: 5px; cursor: pointer; }
+    .day-header { font-weight: bold; padding: 10px 0; }
+    .has-record::after { content: '✅'; position: absolute; bottom: 5px; right: 5px; font-size: 1.1em; }
+    .today { border: 2px solid #3498db; background: #ebf5fb; }
+    #loading { text-align: center; margin-top: 100px; font-size: 1.1em; color: #666; }
+    .btn-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    button { padding: 8px 15px; border: none; background: #3498db; color: white; border-radius: 5px; }
   </style>
 </head>
 <body>
-  <div id="loading">データを読み込み中...</div>
-  <div id="container" style="display: none;">
-    <h2>服薬記録カレンダー</h2>
-    <div id="calendar-header">
-      <button onclick="changeMonth(-1)">前月</button>
-      <div id="month-label"></div>
-      <button onclick="changeMonth(1)">翌月</button>
+  <div id="loading">読み込み中...</div>
+  <div id="container">
+    <div class="btn-row">
+      <button onclick="moveMonth(-1)">前月</button>
+      <h3 id="month-label"></h3>
+      <button onclick="moveMonth(1)">翌月</button>
     </div>
     <div id="calendar-grid">
       <div class="day-header">日</div><div class="day-header">月</div><div class="day-header">火</div>
       <div class="day-header">水</div><div class="day-header">木</div><div class="day-header">金</div><div class="day-header">土</div>
     </div>
-    <div id="details">
-      <h3 id="details-date"></h3>
-      <ul id="details-list"></ul>
-    </div>
-    <div style="text-align: center; margin-top: 30px;">
-      <a href="terms.html" style="color: #95a5a6; font-size: 12px;">利用規約</a>
+    <div id="details" style="margin-top:20px; border-top:1px solid #eee; padding-top:10px; display:none;">
+      <h4 id="detail-date"></h4>
+      <ul id="detail-list"></ul>
     </div>
   </div>
 
   <script>
-    // ★【重要】あなたの情報を入れてください
-    const gasUrl = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
-    const liffId = "2009771327-ZlTtzNT6";
+    const gasUrl = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; // ★新しくデプロイしたURLに書き換え
+    const liffId = "2009771241-wKEi2etS"; // ★カレンダー用のLIFF ID
+    let current = new Date();
+    let records = {};
 
-    let currentDate = new Date();
-    let allRecords = {};
-
-    liff.init({ liffId: liffId }).then(() => {
+    liff.init({ liffId }).then(() => {
+      // NFCリンク経由（itemがある）なら即座に閉じて記録をGASに任せる
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('item')) {
+        liff.closeWindow();
+        return;
+      }
       if (!liff.isLoggedIn()) { liff.login(); } 
-      else { liff.getProfile().then(p => loadRecords(p.userId)); }
+      else { liff.getProfile().then(p => fetchRecords(p.userId)); }
     });
 
-    async function loadRecords(userId) {
+    async function fetchRecords(uid) {
       try {
-        const res = await fetch(`${gasUrl}?userId=${userId}`);
-        allRecords = await res.json();
+        const res = await fetch(`${gasUrl}?userId=${uid}`);
+        records = await res.json();
+      } finally {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('container').style.display = 'block';
-        renderCalendar();
-      } catch (e) { document.getElementById('loading').innerText = "取得失敗。URLを確認してください。"; }
+        render();
+      }
     }
 
-    function renderCalendar() {
+    function render() {
       const grid = document.getElementById('calendar-grid');
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      document.getElementById('month-label').textContent = `${year}年 ${month + 1}月`;
-      
-      document.querySelectorAll('.day').forEach(el => el.remove());
+      const y = current.getFullYear();
+      const m = current.getMonth();
+      document.getElementById('month-label').textContent = `${y}年 ${m + 1}月`;
+      document.querySelectorAll('.day').forEach(e => e.remove());
 
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const first = new Date(y, m, 1).getDay();
+      const last = new Date(y, m + 1, 0).getDate();
 
       for (let i = 0; i < 42; i++) {
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'day';
-        const dayNum = i - firstDay + 1;
-        if (dayNum > 0 && dayNum <= daysInMonth) {
-          dayDiv.textContent = dayNum;
-          const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
-          if (allRecords[dateKey]) dayDiv.classList.add('has-record');
-          if (new Date().toDateString() === new Date(year, month, dayNum).toDateString()) dayDiv.classList.add('today');
-          dayDiv.onclick = () => showDetails(dateKey);
+        const d = i - first + 1;
+        const div = document.createElement('div');
+        div.className = 'day';
+        if (d > 0 && d <= last) {
+          div.textContent = d;
+          const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          if (records[key]) div.classList.add('has-record');
+          if (new Date().toDateString() === new Date(y,m,d).toDateString()) div.classList.add('today');
+          div.onclick = () => show(key);
         } else {
-          dayDiv.classList.add('other-month');
+          div.style.visibility = 'hidden';
         }
-        grid.appendChild(dayDiv);
+        grid.appendChild(div);
       }
     }
 
-    function showDetails(key) {
-      const list = document.getElementById('details-list');
-      list.innerHTML = '';
-      if (allRecords[key]) {
-        document.getElementById('details-date').textContent = key;
-        allRecords[key].forEach(r => {
+    function show(key) {
+      const d = document.getElementById('details');
+      const l = document.getElementById('detail-list');
+      l.innerHTML = '';
+      if (records[key]) {
+        document.getElementById('detail-date').textContent = key;
+        records[key].forEach(r => {
           const li = document.createElement('li');
           li.textContent = `${r.time} - ${r.item}`;
-          list.appendChild(li);
+          l.appendChild(li);
         });
-        document.getElementById('details').style.display = 'block';
-      }
+        d.style.display = 'block';
+      } else { d.style.display = 'none'; }
     }
 
-    function changeMonth(diff) {
-      currentDate.setMonth(currentDate.getMonth() + diff);
-      renderCalendar();
-    }
+    function moveMonth(n) { current.setMonth(current.getMonth() + n); render(); }
   </script>
 </body>
 </html>
