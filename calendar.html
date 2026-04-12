@@ -1,48 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>服用履歴カレンダー</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; color: #333; }
-        .history-list { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 20px; }
-        .history-item { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 14px; }
-        .calendar-check { color: #28a745; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h3>📅 服用済みカレンダー</h3>
-    <div id="calendar-area">読み込み中...</div>
-    
-    <h3>📝 最近の記録</h3>
-    <div id="history-area" class="history-list"></div>
+https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec<script>
+    const GAS_URL = "★最新のGASデプロイURL★";
+    const LIFF_ID = "2009771327-tpjaCzG9"; 
 
-    <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
-        const LIFF_ID = "2009771327-tpjaCzG9"; 
-
-        async function init() {
+    async function init() {
+        try {
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
             
-            // GASからデータを取得
             const res = await fetch(`${GAS_URL}?userId=${profile.userId}`);
             const data = await res.json();
 
-            // 履歴表示
+            // 1. 履歴の表示
             const hArea = document.getElementById('history-area');
-            hArea.innerHTML = data.history.map(h => `<div class="history-item">${h}</div>`).join('');
+            if (data.history.length > 0) {
+                hArea.innerHTML = data.history.map(h => `<div class="history-item">${h}</div>`).join('');
+            } else {
+                hArea.innerHTML = "記録がまだありません。";
+            }
 
-            // 簡易カレンダー（今日は飲んだ？）
-            const today = new Date().toISOString().split('T')[0];
-            const hasDrunkToday = data.calendar.includes(today);
-            document.getElementById('calendar-area').innerHTML = hasDrunkToday 
-                ? '<span class="calendar-check">✅ 本日は服用済みです</span>' 
-                : '❌ 本日はまだ記録がありません';
+            // 2. 今日のチェック表示
+            const today = new Date();
+            const todayStr = today.getFullYear() + "-" + 
+                             ("0" + (today.getMonth() + 1)).slice(-2) + "-" + 
+                             ("0" + today.getDate()).slice(-2);
+            
+            const cArea = document.getElementById('calendar-area');
+            // data.calendar（日付配列）に今日の日付が含まれているかチェック
+            if (data.calendar.includes(todayStr)) {
+                cArea.innerHTML = '<div style="font-size:40px;">✅</div>本日服用済み';
+            } else {
+                cArea.innerHTML = '<div style="font-size:40px;">❌</div>未服用';
+            }
+        } catch (e) {
+            document.getElementById('status').innerText = "エラー: " + e;
         }
-        init();
-    </script>
-</body>
-</html>
+    }
+    init();
+</script>
