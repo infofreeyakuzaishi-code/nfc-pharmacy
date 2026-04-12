@@ -1,44 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>記録中...</title>
+    <meta charset="UTF-8"><title>記録中</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-    <p id="msg" style="text-align:center; margin-top:50px;">記録しています。少々お待ちください...</p>
-
+    <div style="text-align:center; margin-top:50px;">記録しています...</div>
     <script>
-        // ★あなたの「記録用」LIFF IDを入れてください
-        const liffId = "2009757402-6XKBiLYl";
-
-        liff.init({ liffId: liffId }).then(() => {
-            if (!liff.isLoggedIn()) {
-                liff.login();
-            } else {
-                // URLから item=0001 などのパラメータを取得
-                const urlParams = new URLSearchParams(window.location.search);
-                const itemID = urlParams.get('item');
-
-                if (itemID) {
-                    // LINEのトーク画面に「item=0001」というテキストを自動で送信する
-                    // これによりGASのdoPostが起動してスプレッドシートに書き込まれます
-                    liff.sendMessages([{
-                        type: 'text',
-                        text: 'item=' + itemID
-                    }]).then(() => {
-                        // 送信が完了したらすぐに画面を閉じる
-                        liff.closeWindow();
-                    }).catch((err) => {
-                        document.getElementById('msg').innerText = "エラーが発生しました: " + err;
-                    });
-                } else {
-                    document.getElementById('msg').innerText = "IDが見つかりません。";
-                }
+        const LIFF_ID = "2009757402-6XKBiLYl";
+        liff.init({ liffId: LIFF_ID }).then(() => {
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            const id = new URLSearchParams(window.location.search).get('item');
+            if (id) {
+                liff.sendMessages([{ type: 'text', text: 'item=' + id }])
+                    .then(() => liff.closeWindow())
+                    .catch(err => alert("トーク画面で開いてください"));
             }
-        }).catch((err) => {
-            console.error(err);
         });
     </script>
 </body>
