@@ -6,69 +6,63 @@
     <title>服薬カレンダー</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* スタイルは今のまま維持 */
         body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .calendar-card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 350px; padding: 20px; }
-        .status-badge { font-size: 1.1em; font-weight: bold; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; min-height: 3em; display: flex; align-items: center; justify-content: center; }
+        .status-badge { font-size: 1.1em; font-weight: bold; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; min-height: 3em; display: flex; align-items: center; justify-content: center; border: 2px solid #3182ce; }
         .checked { border: 2px solid #38b2ac; background-color: #e6fffa; color: #234e52; }
         .unchecked { border: 2px solid #feb2b2; background-color: #fff5f5; color: #9b2c2c; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
         .day-label { font-size: 0.8em; color: #718096; text-align: center; }
-        .date-cell { position: relative; height: 45px; border: 1px solid #edf2f7; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.9em; }
+        .date-cell { position: relative; height: 45px; border: 1px solid #edf2f7; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.9em; background: #fff; }
         .today { border: 2px solid #3182ce; font-weight: bold; }
-        .stamp { position: absolute; font-size: 1.2em; opacity: 0.8; }
+        .stamp { position: absolute; font-size: 1.2em; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.8; }
     </style>
 </head>
 <body>
-
     <div class="calendar-card">
-        <h2 id="month-title" style="text-align: center;">---年 --月</h2>
-        <div id="status-badge" class="status-badge">📡 接続を確認中...</div>
-        <div class="calendar-grid" id="calendar-grid"></div>
+        <h2 id="month-title" style="text-align: center;">--年 --月</h2>
+        <div id="status-badge" class="status-badge">読み込み中...</div>
+        <div class="calendar-grid" id="calendar-grid">
+            <div class="day-label">日</div><div class="day-label">月</div><div class="day-label">火</div><div class="day-label">水</div><div class="day-label">木</div><div class="day-label">金</div><div class="day-label">土</div>
+        </div>
     </div>
+    <div id="history-list" style="width:100%; max-width:350px; margin-top:20px;"></div>
 
     <script>
         const LIFF_ID = "2009771327-ZlTtzNT6"; 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
         async function init() {
-            const badge = document.getElementById('status-badge');
             try {
-                badge.innerText = "🔑 LINE認証中...";
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 
-                badge.innerText = "☁️ データ取得中...";
-                // タイムアウトを設定して、ずっと「読み込み中」になるのを防ぐ
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒でタイムアウト
-
-                const response = await fetch(`${GAS_URL}?userId=${profile.userId}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) throw new Error("GASからの応答が正常ではありません");
-                
+                // データ取得
+                const response = await fetch(`${GAS_URL}?userId=${profile.userId}`);
                 const data = await response.json();
-                renderCalendar(data.calendar);
+
+                // 描画
+                renderCalendar(data.calendar || []);
+                renderHistory(data.history || []);
             } catch (error) {
-                console.error(error);
-                badge.innerText = "❌ 接続失敗: " + error.message;
-                badge.className = "status-badge unchecked";
+                document.getElementById('status-badge').innerText = "エラーが発生しました";
             }
         }
 
-        // renderCalendar 関数などは前回のものをそのまま使用
         function renderCalendar(completedDates) {
             const now = new Date();
             const year = now.getFullYear();
             const month = now.getMonth();
             const todayStr = `${year}-${("0" + (month + 1)).slice(-2)}-${("0" + now.getDate()).slice(-2)}`;
+            
             document.getElementById('month-title').innerText = `${year}年 ${month + 1}月`;
             const badge = document.getElementById('status-badge');
 
+            // --- 称賛メッセージの設定（安全な方法） ---
             if (completedDates.includes(todayStr)) {
-                badge.innerText = "🎉 完璧！今日もバッチリですね！";
+                const msgs = ["✨ 完璧！今日もバッチリ！", "🎉 さすが！健康貯金UP！", "💪 ナイス！継続は力なり！", "💮 お見事！自分を褒めて！"];
+                badge.innerText = msgs[now.getDate() % msgs.length];
                 badge.className = "status-badge checked";
             } else {
                 badge.innerText = "🥤 今日も忘れずに飲みましょう！";
@@ -76,10 +70,10 @@
             }
 
             const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '<div class="day-label">日</div><div class="day-label">月</div><div class="day-label">火</div><div class="day-label">水</div><div class="day-label">木</div><div class="day-label">金</div><div class="day-label">土</div>';
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
 
+            // 既存の曜日ラベルを残して日付を追加
             for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="date-cell" style="border:none;"></div>`;
             for (let date = 1; date <= lastDate; date++) {
                 const dateStr = `${year}-${("0" + (month + 1)).slice(-2)}-${("0" + date).slice(-2)}`;
@@ -87,6 +81,12 @@
                 const hasStamp = completedDates.includes(dateStr) ? '<span class="stamp">✅</span>' : '';
                 grid.innerHTML += `<div class="date-cell ${isToday}">${date}${hasStamp}</div>`;
             }
+        }
+
+        function renderHistory(history) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = "<h3>📝 最近の記録</h3>" + 
+                history.map(h => `<div style="background:white; padding:10px; margin-bottom:5px; border-radius:5px; font-size:0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">${h}</div>`).join('');
         }
 
         init();
