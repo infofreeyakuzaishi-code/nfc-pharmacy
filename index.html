@@ -1,76 +1,28 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>記録中</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-</head>
-<body>
-    <div id="status" style="text-align:center; margin-top:50px; font-family:sans-serif; color:#333;">
-        <p id="msg">初期化中...</p>
-        <p id="debug" style="font-size:12px; color:#999;"></p>
-    </div>
+<script>
+    const LIFF_ID = "2009771327-tpjaCzG9"; // さきほどの新しいID
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; // ★ここに最新の/execを貼る
 
-    <script>
-        const LIFF_ID = "2009771327-tpjaCzG9"; 
+    async function start() {
+        try {
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
 
-        async function start() {
-            const msg = document.getElementById('msg');
-            const debug = document.getElementById('debug');
+            const profile = await liff.getProfile();
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemId = urlParams.get('item');
 
-            try {
-                // 1. LIFF初期化
-                await liff.init({ liffId: LIFF_ID });
-                debug.innerText = "初期化完了";
-
-                if (!liff.isLoggedIn()) {
-                    debug.innerText = "ログイン中...";
-                    liff.login();
-                    return;
-                }
-
-                // 2. URLパラメータ取得
-                const urlParams = new URLSearchParams(window.location.search);
-                const id = urlParams.get('item');
+            if (itemId) {
+                // LINEに喋らせるのではなく、直接GASにデータを送る
+                await fetch(`${GAS_URL}?userId=${profile.userId}&item=${itemId}`, {
+                    mode: 'no-cors' // これでおまじない的に通信を通します
+                });
                 
-                if (!id) {
-                    msg.innerText = "❌ アイテムIDがありません";
-                    return;
-                }
-
-                debug.innerText = "ID: " + id + " を送信準備中...";
-
-                // 3. メッセージ送信
-                // トーク画面にメッセージを送る
-                await liff.sendMessages([{
-                    type: 'text',
-                    text: 'item=' + id
-                }]);
-
-                msg.innerText = "✅ 記録しました！";
-                debug.innerText = "画面を閉じます...";
-
-                // 4. 画面を閉じる
-                setTimeout(() => {
-                    liff.closeWindow();
-                }, 300);
-
-            } catch (err) {
-                console.error(err);
-                msg.innerText = "⚠️ エラーが発生しました";
-                // 具体的なエラー内容を表示
-                debug.innerHTML = `Error: ${err.message}<br>Code: ${err.code}`;
-                
-                // もし「user delivered...」等の権限エラーなら案内を出す
-                if (err.message.includes("permission") || err.code === "forbidden") {
-                    msg.innerText = "権限エラー";
-                    debug.innerHTML += "<br>LINE Developersで'Chat message sending'を再度確認してください。";
-                }
+                // 完了したら即座に閉じる
+                liff.closeWindow();
             }
+        } catch (err) {
+            alert("エラー: " + err);
         }
-
-        start();
-    </script>
-</body>
-</html>
+    }
+    start();
+</script>
