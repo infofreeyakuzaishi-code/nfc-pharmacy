@@ -1,98 +1,48 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>服薬カレンダー</title>
+    <meta charset="UTF-8">
+    <title>服用履歴カレンダー</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 10px; margin: 0; }
-        #container { max-width: 500px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-        .day { height: 50px; border: 1px solid #eee; border-radius: 8px; position: relative; padding-top: 5px; font-size: 14px; }
-        .has-record::after { content: '✅'; position: absolute; bottom: 2px; right: 2px; font-size: 12px; }
-        .today { border: 2px solid #3498db; background: #ebf5fb; }
-        .history-section { margin-top: 25px; border-top: 2px solid #eee; padding-top: 15px; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
-        .history-date { font-weight: bold; color: #7f8c8d; background: #f0f0f0; padding: 4px 8px; border-radius: 4px; margin-top: 10px; }
-        #loading { text-align: center; margin-top: 100px; color: #666; }
+        body { font-family: sans-serif; padding: 20px; color: #333; }
+        .history-list { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        .history-item { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 14px; }
+        .calendar-check { color: #28a745; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="loading">読み込み中...</div>
-    <div id="container" style="display:none;">
-        <h3 id="month-label" style="text-align:center; margin-bottom:15px;"></h3>
-        <div id="calendar-grid">
-            <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
-        </div>
-        
-        <div class="history-section">
-            <h4 style="margin-bottom:10px;">🕒 最近の記録（履歴表）</h4>
-            <div id="history-list"></div>
-        </div>
-    </div>
+    <h3>📅 服用済みカレンダー</h3>
+    <div id="calendar-area">読み込み中...</div>
+    
+    <h3>📝 最近の記録</h3>
+    <div id="history-area" class="history-list"></div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; // ★最新の/execを貼る
-        const liffId = "2009771327-ZlTtzNT6";
-        let records = {};
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+        const LIFF_ID = "2009771327-tpjaCzG9"; 
 
-        liff.init({ liffId }).then(() => {
-            if (!liff.isLoggedIn()) liff.login();
-            else liff.getProfile().then(p => fetchRecords(p.userId));
-        });
-
-        async function fetchRecords(uid) {
-            const res = await fetch(`${gasUrl}?userId=${uid}`);
-            records = await res.json();
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('container').style.display = 'block';
-            render();
-        }
-
-        function render() {
-            const grid = document.getElementById('calendar-grid');
-            const list = document.getElementById('history-list');
-            const now = new Date();
-            const y = now.getFullYear(), m = now.getMonth();
-            document.getElementById('month-label').textContent = `${y}年 ${m+1}月`;
+        async function init() {
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            const profile = await liff.getProfile();
             
-            // カレンダー描画
-            const first = new Date(y, m, 1).getDay();
-            const last = new Date(y, m+1, 0).getDate();
-            for(let i=0; i<first; i++) grid.appendChild(document.createElement('div'));
-            
-            // 日付を降順（新しい順）でソートして表を作る準備
-            const sortedKeys = Object.keys(records).sort().reverse();
+            // GASからデータを取得
+            const res = await fetch(`${GAS_URL}?userId=${profile.userId}`);
+            const data = await res.json();
 
-            for(let d=1; d<=last; d++) {
-                const div = document.createElement('div');
-                div.className = 'day'; div.textContent = d;
-                const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                if(records[key]) div.classList.add('has-record');
-                if(now.getDate() === d) div.classList.add('today');
-                grid.appendChild(div);
-            }
+            // 履歴表示
+            const hArea = document.getElementById('history-area');
+            hArea.innerHTML = data.history.map(h => `<div class="history-item">${h}</div>`).join('');
 
-            // 履歴表の生成
-            if (sortedKeys.length === 0) {
-                list.innerHTML = '<p style="color:#999; font-size:12px;">記録がありません</p>';
-                return;
-            }
-
-            sortedKeys.forEach(date => {
-                const dateDiv = document.createElement('div');
-                dateDiv.className = 'history-date';
-                dateDiv.textContent = date;
-                list.appendChild(dateDiv);
-
-                records[date].forEach(item => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'history-item';
-                    itemDiv.innerHTML = `<span>${item.time}</span><span>${item.item}</span>`;
-                    list.appendChild(itemDiv);
-                });
-            });
+            // 簡易カレンダー（今日は飲んだ？）
+            const today = new Date().toISOString().split('T')[0];
+            const hasDrunkToday = data.calendar.includes(today);
+            document.getElementById('calendar-area').innerHTML = hasDrunkToday 
+                ? '<span class="calendar-check">✅ 本日は服用済みです</span>' 
+                : '❌ 本日はまだ記録がありません';
         }
+        init();
     </script>
 </body>
 </html>
