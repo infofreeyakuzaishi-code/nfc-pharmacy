@@ -6,21 +6,32 @@
     <title>服薬カレンダー</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .calendar-card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 350px; padding: 20px; text-align: center; }
-        h2 { margin: 0 0 20px 0; color: #333; }
-        .status-badge { font-size: 1.2em; font-weight: bold; padding: 10px; border-radius: 10px; margin-bottom: 20px; }
-        .checked { background-color: #e6fffa; color: #2d3748; border: 2px solid #38b2ac; }
-        .unchecked { background-color: #fff5f5; color: #c53030; border: 2px solid #feb2b2; }
-        .history-section { width: 100%; max-width: 350px; margin-top: 20px; text-align: left; }
+        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .calendar-card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 350px; padding: 20px; }
+        .status-badge { font-size: 1.1em; font-weight: bold; padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: center; border: 2px solid #38b2ac; background-color: #e6fffa; color: #2d3748; }
+        
+        /* カレンダーのグリッド設定 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+        .day-label { font-size: 0.8em; color: #718096; text-align: center; padding-bottom: 5px; }
+        .date-cell { position: relative; height: 45px; border: 1px solid #edf2f7; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.9em; background: #fff; }
+        .today { border: 2px solid #3182ce; font-weight: bold; }
+        /* スタンプのデザイン */
+        .stamp { position: absolute; font-size: 1.2em; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.7; pointer-events: none; }
+        
+        .history-section { width: 100%; max-width: 350px; margin-top: 20px; }
         .history-item { background: white; margin-bottom: 8px; padding: 12px; border-radius: 8px; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
     <div class="calendar-card">
-        <h2 id="current-month">2026年 4月</h2>
-        <div id="status-display" class="status-badge">読み込み中...</div>
+        <h2 id="month-title" style="text-align: center;">2026年 4月</h2>
+        <div id="status-badge" class="status-badge">読み込み中...</div>
+        
+        <div class="calendar-grid" id="calendar-grid">
+            <div class="day-label">日</div><div class="day-label">月</div><div class="day-label">火</div>
+            <div class="day-label">水</div><div class="day-label">木</div><div class="day-label">金</div><div class="day-label">土</div>
+            </div>
     </div>
 
     <div class="history-section">
@@ -29,50 +40,55 @@
     </div>
 
     <script>
-        // ★修正ポイント：最新のIDとURLに差し替え済み
         const LIFF_ID = "2009771327-ZlTtzNT6"; 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
         async function init() {
-            try {
-                await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-                const profile = await liff.getProfile();
-                
-                // GASから自分のデータだけを取得
-                const response = await fetch(`${GAS_URL}?userId=${profile.userId}`);
-                const data = await response.json();
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            const profile = await liff.getProfile();
+            const response = await fetch(`${GAS_URL}?userId=${profile.userId}`);
+            const data = await response.json();
 
-                // 1. 今日の日付でチェック判定
-                const now = new Date();
-                const todayStr = now.getFullYear() + "-" + ("0" + (now.getMonth() + 1)).slice(-2) + "-" + ("0" + now.getDate()).slice(-2);
-                
-                const statusDisplay = document.getElementById('status-display');
-                if (data.calendar && data.calendar.includes(todayStr)) {
-                    statusDisplay.innerText = "✅ 本日は服用済みです";
-                    statusDisplay.className = "status-badge checked";
-                } else {
-                    statusDisplay.innerText = "❌ まだ記録がありません";
-                    statusDisplay.className = "status-badge unchecked";
-                }
+            renderCalendar(data.calendar); // カレンダー描画
+            renderHistory(data.history);   // 履歴表示
+        }
 
-                // 2. 履歴一覧の表示
-                const historyList = document.getElementById('history-list');
-                if (data.history && data.history.length > 0) {
-                    historyList.innerHTML = data.history.map(item => `<div class="history-item">${item}</div>`).join('');
-                } else {
-                    historyList.innerHTML = "<p>記録はありません。</p>";
-                }
+        function renderCalendar(completedDates) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const todayStr = `${year}-${("0" + (month + 1)).slice(-2)}-${("0" + now.getDate()).slice(-2)}`;
+            
+            document.getElementById('month-title').innerText = `${year}年 ${month + 1}月`;
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const grid = document.getElementById('calendar-grid');
 
-                document.getElementById('current-month').innerText = `${now.getFullYear()}年 ${now.getMonth() + 1}月`;
+            // 今日のステータス更新
+            const badge = document.getElementById('status-badge');
+            badge.innerText = completedDates.includes(todayStr) ? "✅ 本日は服用済みです" : "❌ 未服用です";
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('status-display').innerText = "エラー: " + error;
+            // 空白セル
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div class="date-cell" style="background:transparent; border:none;"></div>`;
             }
+
+            // 日付セル
+            for (let date = 1; date <= lastDate; date++) {
+                const dateStr = `${year}-${("0" + (month + 1)).slice(-2)}-${("0" + date).slice(-2)}`;
+                const isToday = dateStr === todayStr ? 'today' : '';
+                const hasStamp = completedDates.includes(dateStr) ? '<span class="stamp">✅</span>' : '';
+                
+                grid.innerHTML += `<div class="date-cell ${isToday}">${date}${hasStamp}</div>`;
+            }
+        }
+
+        function renderHistory(history) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = history.length > 0 
+                ? history.map(h => `<div class="history-item">${h}</div>`).join('')
+                : "記録がありません";
         }
 
         init();
