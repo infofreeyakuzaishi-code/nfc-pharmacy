@@ -8,17 +8,16 @@
     <style>
         body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .calendar-card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 350px; padding: 20px; }
-        .status-badge { font-size: 1.1em; font-weight: bold; padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: center; border: 2px solid #38b2ac; background-color: #e6fffa; color: #2d3748; }
+        /* メッセージバッジの装飾 */
+        .status-badge { font-size: 1.1em; font-weight: bold; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; min-height: 3em; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .checked { border: 2px solid #38b2ac; background-color: #e6fffa; color: #234e52; box-shadow: 0 0 10px rgba(56, 178, 172, 0.2); }
+        .unchecked { border: 2px solid #feb2b2; background-color: #fff5f5; color: #9b2c2c; }
         
-        /* カレンダーのグリッド設定 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
         .day-label { font-size: 0.8em; color: #718096; text-align: center; padding-bottom: 5px; }
         .date-cell { position: relative; height: 45px; border: 1px solid #edf2f7; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.9em; background: #fff; }
         .today { border: 2px solid #3182ce; font-weight: bold; }
-        /* スタンプのデザイン */
-        .stamp { position: absolute; font-size: 1.2em; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.7; pointer-events: none; }
-        
-        .history-section { width: 100%; max-width: 350px; margin-top: 20px; }
+        .stamp { position: absolute; font-size: 1.2em; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.8; }
         .history-item { background: white; margin-bottom: 8px; padding: 12px; border-radius: 8px; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
 </head>
@@ -31,17 +30,28 @@
         <div class="calendar-grid" id="calendar-grid">
             <div class="day-label">日</div><div class="day-label">月</div><div class="day-label">火</div>
             <div class="day-label">水</div><div class="day-label">木</div><div class="day-label">金</div><div class="day-label">土</div>
-            </div>
+        </div>
     </div>
 
-    <div class="history-section">
-        <h3>📝 最近の記録（最新20件）</h3>
+    <div class="history-section" style="width:100%; max-width:350px; margin-top:20px;">
+        <h3>📝 最近の記録</h3>
         <div id="history-list"></div>
     </div>
 
     <script>
-        const LIFF_ID = "2009771327-ZlTtzNT6"; 
+        const LIFF_ID = "2009771327-tpjaCzG9"; 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+
+        // 褒め言葉のリスト
+        const PRAISE_MESSAGES = [
+            "✨ 完璧です！その調子で続けましょう！",
+            "🎉 さすが！健康貯金が貯まりましたね！",
+            "💪 ナイス服用！今日も一歩前進です！",
+            "💮 今日もバッチリ！自分を褒めてあげて！",
+            "🚀 継続は力なり！素晴らしいリズムです！",
+            "👍 お見事！体が喜んでいますよ！",
+            "🌟 決めたことを守るあなた、最高です！"
+        ];
 
         async function init() {
             await liff.init({ liffId: LIFF_ID });
@@ -50,8 +60,8 @@
             const response = await fetch(`${GAS_URL}?userId=${profile.userId}`);
             const data = await response.json();
 
-            renderCalendar(data.calendar); // カレンダー描画
-            renderHistory(data.history);   // 履歴表示
+            renderCalendar(data.calendar);
+            renderHistory(data.history);
         }
 
         function renderCalendar(completedDates) {
@@ -61,34 +71,36 @@
             const todayStr = `${year}-${("0" + (month + 1)).slice(-2)}-${("0" + now.getDate()).slice(-2)}`;
             
             document.getElementById('month-title').innerText = `${year}年 ${month + 1}月`;
+            const badge = document.getElementById('status-badge');
+
+            // --- 称賛メッセージの抽選 ---
+            if (completedDates.includes(todayStr)) {
+                // 日替わりでメッセージが変わるように、日付を元にインデックスを決定
+                const msgIndex = now.getDate() % PRAISE_MESSAGES.length;
+                badge.innerText = PRAISE_MESSAGES[msgIndex];
+                badge.className = "status-badge checked";
+            } else {
+                badge.innerText = "🥤 今日も忘れずに飲みましょう！";
+                badge.className = "status-badge unchecked";
+            }
+
+            // カレンダー描画
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
             const grid = document.getElementById('calendar-grid');
 
-            // 今日のステータス更新
-            const badge = document.getElementById('status-badge');
-            badge.innerText = completedDates.includes(todayStr) ? "✅ 本日は服用済みです" : "❌ 未服用です";
-
-            // 空白セル
-            for (let i = 0; i < firstDay; i++) {
-                grid.innerHTML += `<div class="date-cell" style="background:transparent; border:none;"></div>`;
-            }
-
-            // 日付セル
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="date-cell" style="border:none;"></div>`;
             for (let date = 1; date <= lastDate; date++) {
                 const dateStr = `${year}-${("0" + (month + 1)).slice(-2)}-${("0" + date).slice(-2)}`;
                 const isToday = dateStr === todayStr ? 'today' : '';
                 const hasStamp = completedDates.includes(dateStr) ? '<span class="stamp">✅</span>' : '';
-                
                 grid.innerHTML += `<div class="date-cell ${isToday}">${date}${hasStamp}</div>`;
             }
         }
 
         function renderHistory(history) {
             const list = document.getElementById('history-list');
-            list.innerHTML = history.length > 0 
-                ? history.map(h => `<div class="history-item">${h}</div>`).join('')
-                : "記録がありません";
+            list.innerHTML = history.length > 0 ? history.map(h => `<div class="history-item">${h}</div>`).join('') : "記録なし";
         }
 
         init();
