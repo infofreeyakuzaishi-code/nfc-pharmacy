@@ -1,28 +1,29 @@
-<script>
-    const LIFF_ID = "2009771327-tpjaCzG9"; // さきほどの新しいID
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; // ★ここに最新の/execを貼る
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記録中</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+    <div style="text-align:center; margin-top:50px;">記録しています...</div>
+    <script>
+        const LIFF_ID = "2009771327-tpjaCzG9"; // 「記録用ユニット」のID
 
-    async function start() {
-        try {
-            await liff.init({ liffId: LIFF_ID });
+        liff.init({ liffId: LIFF_ID }).then(() => {
             if (!liff.isLoggedIn()) { liff.login(); return; }
-
-            const profile = await liff.getProfile();
             const urlParams = new URLSearchParams(window.location.search);
-            const itemId = urlParams.get('item');
-
-            if (itemId) {
-                // LINEに喋らせるのではなく、直接GASにデータを送る
-                await fetch(`${GAS_URL}?userId=${profile.userId}&item=${itemId}`, {
-                    mode: 'no-cors' // これでおまじない的に通信を通します
-                });
-                
-                // 完了したら即座に閉じる
-                liff.closeWindow();
+            const id = urlParams.get('item');
+            if (id) {
+                liff.sendMessages([{ type: 'text', text: 'item=' + id }])
+                    .then(() => liff.closeWindow())
+                    .catch(err => {
+                        // ここでエラーが出たら画面に表示する
+                        document.body.innerHTML = "送信失敗: " + err.message;
+                    });
             }
-        } catch (err) {
-            alert("エラー: " + err);
-        }
-    }
-    start();
-</script>
+        });
+    </script>
+</body>
+</html>
