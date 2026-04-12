@@ -1,22 +1,41 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8"><title>記録中</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-</head>
-<body>
-    <div style="text-align:center; margin-top:50px;">記録しています...</div>
-    <script>
-        const LIFF_ID = "2009757402-6XKBiLYl";
-        liff.init({ liffId: LIFF_ID }).then(() => {
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            const id = new URLSearchParams(window.location.search).get('item');
-            if (id) {
-                liff.sendMessages([{ type: 'text', text: 'item=' + id }])
-                    .then(() => liff.closeWindow())
-                    .catch(err => alert("トーク画面で開いてください"));
+<script>
+    const LIFF_ID = "2009757402-6XKBiLYl"; 
+
+    async function main() {
+        try {
+            await liff.init({ liffId: LIFF_ID });
+            
+            if (!liff.isLoggedIn()) {
+                liff.login();
+                return;
             }
-        });
-    </script>
-</body>
-</html>
+
+            // ★ここがポイント：コンテキスト（どこで開いているか）をチェック
+            const context = liff.getContext();
+            console.log(context); // デバッグ用
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('item');
+
+            if (id) {
+                // 少しだけ待機してから送信（初期化直後の不安定さを回避）
+                setTimeout(() => {
+                    liff.sendMessages([{
+                        type: 'text',
+                        text: 'item=' + id
+                    }])
+                    .then(() => {
+                        liff.closeWindow();
+                    })
+                    .catch((err) => {
+                        // エラー内容を画面に表示して原因を特定する
+                        document.body.innerHTML = `<p style="padding:20px;">送信エラー: ${err.message}<br>Context: ${liff.getContext().type}</p>`;
+                    });
+                }, 500);
+            }
+        } catch (err) {
+            document.body.innerHTML = "初期化失敗: " + err;
+        }
+    }
+    main();
+</script>
