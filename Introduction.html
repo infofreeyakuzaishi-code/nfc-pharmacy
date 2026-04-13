@@ -112,7 +112,7 @@
 
 <div class="container">
     <header class="hero">
-        <h1>名刺交換から始める、<br>新しい健康体験</h1>
+        <h1>名刺効果行きから始まる、<br>新しい健康管理</h1>
         <p>物理的な体験とデジタルを融合させ、<br>サプリメントや薬の継続率を最大化する<br>プラットフォーム</p>
     </header>
 
@@ -124,8 +124,12 @@
 
     <h2 class="section-title">名刺交換・ご連絡はこちら</h2>
     <div class="btn-container">
-        <a href="javascript:void(0);" onclick="sendLineMessage()" class="btn btn-line">
-            💬 LINEでやり取り
+        <a href="javascript:void(0);" onclick="sendLineMessage('thanks')" class="btn btn-line">
+            💬 LINEでやりとり
+        </a>
+
+        <a href="javascript:void(0);" onclick="sendLineMessage('request')" class="btn btn-line" style="background-color: #008542;">
+            📄 資料請求・1on1はこちら
         </a>
         
         <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank" class="btn" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white;">
@@ -165,23 +169,25 @@
 </div>
 
 <script>
-    // LINEお礼メッセージ送信機能
-    function sendLineMessage() {
-        const lineId = "@534uoyka"; // 公式LINEのID
-        const message = "LINE交換を押して頂きありがとうございます。このまま送信ボタンを押してください。私からあらためてメッセージいたします。（もしお手数でなければ一言メッセージを添えて頂けると喜びます）";
+    // LINEメッセージ送信機能
+    function sendLineMessage(type) {
+        const lineId = "@534uoyka";
+        let message = "";
+
+        if (type === 'thanks') {
+            message = "LINE交換を押して頂きありがとうございます。このまま送信ボタンを押してください。私からあらためてメッセージいたします。（もしお手数でなければ一言メッセージを添えて頂けると喜びます）";
+        } else if (type === 'request') {
+            message = "興味を持って頂きありがとうございます。資料請求/1on1申し込み、どちらかを残してそのまま送信してください。";
+        }
         
-        // 特殊文字や誤字を防ぐため、ブラウザ側でエンコード
         const encodedMessage = encodeURIComponent(message);
         const lineUrl = `https://line.me/R/oaMessage/${lineId}/?${encodedMessage}`;
-        
-        // LINEアプリを起動
         window.location.href = lineUrl;
     }
 
     function startDemo() {
         const status = document.getElementById('demo-status');
         const btn = document.querySelector('.btn-demo');
-        
         btn.disabled = true;
         status.innerHTML = '<p class="pulse" style="color:var(--primary-color)">📡 NFC信号を送信中...</p>';
         
@@ -195,7 +201,7 @@
     function copyContact() {
         const text = "薬剤師 ろぎー\n【肩書き：サプリオタクの薬剤師】\nInstagram: yakuzaishi.loggy\nLINE ID: @534uoyka";
         navigator.clipboard.writeText(text).then(() => {
-            alert("連絡先情報をクリップボードにコピーしました！\n電話帳やメモ帳に貼り付けて保存してください。");
+            alert("連絡先情報をコピーしました！");
         });
     }
 </script>
