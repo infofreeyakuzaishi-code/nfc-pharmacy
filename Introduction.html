@@ -89,6 +89,8 @@
         .btn-demo { background: linear-gradient(135deg, var(--primary-color), #00c9b7); color: white; width: 100%; }
         .btn-line { background-color: var(--line-color); color: white; }
         .btn-contact { background-color: #6c757d; color: white; }
+        /* 資料請求用：少し深みのある緑 */
+        .btn-request { background-color: #008542; color: white; }
 
         #demo-status { height: 50px; margin-top: 15px; font-size: 0.85rem; font-weight: bold; }
 
@@ -101,9 +103,6 @@
         .value-card h3 { font-size: 0.95rem; margin: 0 0 5px; color: var(--primary-color); }
         .value-card p { font-size: 0.8rem; margin: 0; line-height: 1.5; color: var(--text-sub); }
 
-        .sns-links { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
-        .sns-links a { color: var(--text-main); text-decoration: none; font-size: 0.85rem; font-weight: bold; border: 1px solid #ccc; padding: 8px 15px; border-radius: 20px; }
-
         .pulse { animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
@@ -112,7 +111,7 @@
 
 <div class="container">
     <header class="hero">
-        <h1>名刺効果行きから始まる、<br>新しい健康管理</h1>
+        <h1>名刺交換から始める、<br>新しい健康管理</h1>
         <p>物理的な体験とデジタルを融合させ、<br>サプリメントや薬の継続率を最大化する<br>プラットフォーム</p>
     </header>
 
@@ -125,11 +124,7 @@
     <h2 class="section-title">名刺交換・ご連絡はこちら</h2>
     <div class="btn-container">
         <a href="javascript:void(0);" onclick="sendLineMessage('thanks')" class="btn btn-line">
-            💬 LINEでやりとり
-        </a>
-
-        <a href="javascript:void(0);" onclick="sendLineMessage('request')" class="btn btn-line" style="background-color: #008542;">
-            📄 資料請求・1on1はこちら
+            💬 LINEでメッセージ
         </a>
         
         <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank" class="btn" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white;">
@@ -161,6 +156,12 @@
     <div class="value-card">
         <h3>3. 継続を可視化するカレンダー</h3>
         <p>頑張りを一目で確認。自己効力感を高め、モチベーションを維持します。</p>
+    </div>
+
+    <div class="btn-container" style="margin-top: 30px;">
+        <a href="javascript:void(0);" onclick="sendLineMessage('request')" class="btn btn-request">
+            📄 資料請求・1on1はこちら
+        </a>
     </div>
 
     <footer style="text-align: center; margin-top: 40px; font-size: 0.7rem; color: #ccc;">
