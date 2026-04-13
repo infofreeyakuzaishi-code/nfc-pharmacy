@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ろぎーシール - デジタル名刺</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00a86b; /* 健康的なグリーン */
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1c1e;
+                --card-bg: #2d2f31;
+                --text-main: #f1f2f6;
+                --text-sub: #b2bec3;
+            }
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        /* 1. キャッチコピー */
+        .hero {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .hero h1 { font-size: 1.6rem; margin-bottom: 10px; color: var(--primary-color); }
+        .hero p { font-size: 0.9rem; line-height: 1.6; color: var(--text-sub); }
+
+        /* 2. NFCデモ体験セクション */
+        .demo-section {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-btn {
+            background: linear-gradient(135deg, var(--primary-color), #00c9b7);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,168,107,0.3);
+            transition: 0.3s;
+            width: 100%;
+        }
+        .demo-btn:active { transform: scale(0.95); }
+        #demo-status { height: 60px; margin-top: 15px; font-weight: bold; font-size: 0.9rem; }
+
+        /* 3. SNS・4. コア・バリュー */
+        .section-title { font-size: 1.1rem; margin: 30px 0 15px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
+        
+        .value-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+        .value-card h3 { font-size: 1rem; margin: 0 0 8px; color: var(--primary-color); }
+        .value-card p { font-size: 0.85rem; margin: 0; line-height: 1.5; color: var(--text-sub); }
+
+        /* 5. 公式LINE登録 */
+        .line-section {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .btn-line {
+            background-color: #06C755;
+            color: white;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .sns-links { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+        .sns-links a { color: var(--text-main); text-decoration: none; font-size: 0.9rem; font-weight: bold; }
+
+        /* アニメーション用 */
+        .pulse { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="hero">
+        <h1>名刺をタップするだけで始まる、<br>新しい健康管理</h1>
+        <p>物理的な体験とデジタルを融合させ、<br>サプリメントの継続率を最大化するプラットフォーム</p>
+    </header>
+
+    <section class="demo-section">
+        <h2 style="font-size: 1rem; margin-bottom: 20px;">【スマートフォンをかざして体験】</h2>
+        <button class="demo-btn" onclick="startDemo()">⚡️ デモ体験ボタン</button>
+        <div id="demo-status"></div>
+        <p style="font-size: 0.8rem; color: var(--text-sub);">※実際の名刺（NFC）ではボタンを押さずにかざすだけで起動します</p>
+    </section>
+
+    <section>
+        <h2 class="section-title">薬剤師としての知見を発信中</h2>
+        <div class="sns-links">
+            <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank">📸 Instagram</a>
+            <a href="YOUR_TWITTER_URL" target="_blank">🐦 X (Twitter)</a>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">「ろぎーシール」3つの特徴</h2>
+        <div class="value-card">
+            <h3>「かざすだけ」の摩擦ゼロ体験</h3>
+            <p>ボトルに貼ったシールにスマホをタップ。アプリを開く手間を排除し、直感的に記録が完了します。</p>
+        </div>
+        <div class="value-card">
+            <h3>専用アプリ不要、LINEで完結</h3>
+            <p>QR読み取りやDL待ちなどの「離脱ポイント」をゼロに。数秒で利用を開始できるシームレスな導入。</p>
+        </div>
+        <div class="value-card">
+            <h3>継続を可視化するカレンダー</h3>
+            <p>自分の頑張りが一目でわかるフィードバック。自己効力感を高め、服用継続をサポートします。</p>
+        </div>
+    </section>
+
+    <section class="line-section">
+        <p style="font-size: 0.9rem; margin-bottom: 20px;">最新のプロジェクト進捗や、導入のご相談はこちら</p>
+        <a href="https://line.me/R/ti/p/YOUR_ID" class="btn-line">公式LINEで問い合わせる</a>
+    </section>
+</div>
+
+<script>
+    function startDemo() {
+        const status = document.getElementById('demo-status');
+        const btn = document.querySelector('.demo-btn');
+        
+        btn.disabled = true;
+        status.innerHTML = '<p class="pulse">📡 信号を送信中...</p>';
+        
+        setTimeout(() => {
+            status.innerHTML = '<p style="color: var(--primary-color);">✅ 認証完了！<br>クラウド上の管理シートに記録しました</p>';
+            alert("デモ成功！\nこのように「タップ」という動作だけで、裏側のスプレッドシートへの記録とLINE通知が瞬時に行われます。これが物理的な習慣化の力です。");
+            btn.disabled = false;
+        }, 1500);
+    }
+</script>
+
+</body>
+</html>
