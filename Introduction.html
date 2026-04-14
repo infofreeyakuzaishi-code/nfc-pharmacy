@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>薬剤師 ろぎー - Digital Message Card</title>
+    <title>薬剤師 ろぎー - お守りデジタル名刺</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -29,7 +29,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
         }
@@ -39,70 +39,90 @@
             width: 100%;
         }
 
-        .hero {
-            text-align: center;
-            padding: 30px 0;
+        /* --- ① 新設：正方形3連ボタン --- */
+        .omamori-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
         }
-        .hero h1 { font-size: 1.5rem; margin-bottom: 8px; color: var(--primary-color); }
-        .hero p { font-size: 0.85rem; line-height: 1.5; color: var(--text-sub); margin: 0; }
+
+        .omamori-btn {
+            aspect-ratio: 1 / 1;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: 0.2s;
+            padding: 8px;
+            border: 1px solid rgba(0,168,107,0.1);
+        }
+
+        .omamori-btn:active { transform: scale(0.95); }
+
+        .omamori-icon { font-size: 1.5rem; margin-bottom: 8px; }
+        .omamori-label { font-size: 0.7rem; font-weight: bold; line-height: 1.3; }
+
+        /* --- 既存デザインの調整 --- */
+        .hero { text-align: center; padding: 20px 0; }
+        .hero h1 { font-size: 1.3rem; margin-bottom: 8px; color: var(--primary-color); }
+        .hero p { font-size: 0.8rem; line-height: 1.5; color: var(--text-sub); margin: 0; }
 
         .demo-section {
             background-color: var(--card-bg);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             text-align: center;
             margin-bottom: 25px;
         }
 
         .section-title {
-            font-size: 1rem;
-            margin: 25px 0 15px;
+            font-size: 0.95rem;
+            margin: 25px 0 12px;
             border-left: 4px solid var(--primary-color);
             padding-left: 10px;
             font-weight: bold;
         }
 
-        .btn-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .btn-container { display: flex; flex-direction: column; gap: 10px; }
 
         .btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            padding: 16px;
+            padding: 14px;
             border-radius: 12px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             border: none;
             cursor: pointer;
-            transition: 0.2s;
         }
-
-        .btn:active { transform: scale(0.97); }
 
         .btn-demo { background: linear-gradient(135deg, var(--primary-color), #00c9b7); color: white; width: 100%; }
         .btn-line { background-color: var(--line-color); color: white; }
         .btn-contact { background-color: #6c757d; color: white; }
-        /* 資料請求用：少し深みのある緑 */
-        .btn-request { background-color: #008542; color: white; }
 
-        #demo-status { height: 50px; margin-top: 15px; font-size: 0.85rem; font-weight: bold; }
+        #demo-status { height: 45px; margin-top: 10px; font-size: 0.8rem; font-weight: bold; }
 
         .value-card {
             background-color: var(--card-bg);
-            padding: 18px;
-            border-radius: 15px;
-            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
         }
-        .value-card h3 { font-size: 0.95rem; margin: 0 0 5px; color: var(--primary-color); }
-        .value-card p { font-size: 0.8rem; margin: 0; line-height: 1.5; color: var(--text-sub); }
+        .value-card h3 { font-size: 0.9rem; margin: 0 0 5px; color: var(--primary-color); }
+        .value-card p { font-size: 0.75rem; margin: 0; line-height: 1.5; color: var(--text-sub); }
 
+        footer { text-align: center; margin-top: 30px; font-size: 0.7rem; color: #ccc; }
         .pulse { animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
@@ -110,21 +130,36 @@
 <body>
 
 <div class="container">
+    <div class="omamori-grid">
+        <a href="javascript:void(0);" onclick="sendSupport('rx')" class="omamori-btn">
+            <span class="omamori-icon">📄</span>
+            <span class="omamori-label">薬を受け取る<br>(処方箋送信)</span>
+        </a>
+        <a href="javascript:void(0);" onclick="sendSupport('consult')" class="omamori-btn">
+            <span class="omamori-icon">💊</span>
+            <span class="omamori-label">薬・サプリの<br>相談をする</span>
+        </a>
+        <a href="javascript:void(0);" onclick="sendSupport('shop')" class="omamori-btn">
+            <span class="omamori-icon">🛍️</span>
+            <span class="omamori-label">サプリの<br>購入</span>
+        </a>
+    </div>
+
     <header class="hero">
-        <h1>名刺交換から始める、<br>新しい健康管理</h1>
-        <p>物理的な体験とデジタルを融合させ、<br>サプリメントや薬の継続率を最大化する<br>プラットフォーム</p>
+        <h1>名刺をタップするだけで始まる、<br>新しい健康管理</h1>
+        <p>サプリメントや薬の継続率を最大化する<br>習慣化プラットフォーム</p>
     </header>
 
     <section class="demo-section">
-        <h2 style="font-size: 0.9rem; margin-bottom: 15px; color: var(--text-sub);">【NFCシステム デモ体験】</h2>
+        <h2 style="font-size: 0.85rem; margin-bottom: 15px; color: var(--text-sub);">【NFCシステム デモ体験】</h2>
         <button class="btn btn-demo" onclick="startDemo()">⚡️ 今日の服薬を記録する（デモ）</button>
         <div id="demo-status"></div>
     </section>
 
     <h2 class="section-title">名刺交換・ご連絡はこちら</h2>
     <div class="btn-container">
-        <a href="javascript:void(0);" onclick="sendLineMessage('thanks')" class="btn btn-line">
-            💬 LINEでメッセージ
+        <a href="javascript:void(0);" onclick="sendSupport('exchange')" class="btn btn-line">
+            💬 LINEでお礼を送る
         </a>
         
         <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank" class="btn" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white;">
@@ -137,53 +172,38 @@
     </div>
 
     <h2 class="section-title">薬剤師としての想い</h2>
-    <div style="padding: 0 10px; font-size: 0.85rem; line-height: 1.6; color: var(--text-sub);">
-        医療現場で「飲み忘れ」が原因で健康を損なう方を多く見てきました。
-        「ろぎーシール」は、スマホをかざすというシンプルな動作で、
-        ITに詳しくない方でも無理なく健康を維持できる未来を目指しています。
-        サプリオタクな薬剤師ならではのシステムをご体験ください。
+    <div style="padding: 0 10px; font-size: 0.8rem; line-height: 1.6; color: var(--text-sub);">
+        医療現場で「飲み忘れ」が原因で健康を損なう方を多く見てきました。「ろぎーシール」は、スマホをかざすシンプルな動作で、誰でも無理なく健康を維持できる未来を目指しています。サプリオタクな薬剤師ならではのシステムをご体験ください。
     </div>
 
-    <h2 class="section-title">ろぎーシールの3つの特徴</h2>
-    <div class="value-card">
-        <h3>1. かざすだけの摩擦ゼロ体験</h3>
-        <p>アプリを開く手間を排除。ボトルに貼ったシールにタップするだけで、記録が完了します。</p>
-    </div>
-    <div class="value-card">
-        <h3>2. 専用アプリ不要、LINEで完結</h3>
-        <p>日本のインフラであるLINEを活用。導入のハードルを極限まで下げました。</p>
-    </div>
-    <div class="value-card">
-        <h3>3. 継続を可視化するカレンダー</h3>
-        <p>頑張りを一目で確認。自己効力感を高め、モチベーションを維持します。</p>
-    </div>
-
-    <div class="btn-container" style="margin-top: 30px;">
-        <a href="javascript:void(0);" onclick="sendLineMessage('request')" class="btn btn-request">
-            📄 資料請求・1on1はこちら
-        </a>
-    </div>
-
-    <footer style="text-align: center; margin-top: 40px; font-size: 0.7rem; color: #ccc;">
+    <footer style="margin-bottom: 20px;">
         &copy; 2026 ろぎーシール Project
     </footer>
 </div>
 
 <script>
-    // LINEメッセージ送信機能
-    function sendLineMessage(type) {
-        const lineId = "@534uoyka";
+    // 公式LINEへのメッセージ送信制御
+    function sendSupport(type) {
+        const lineId = "@534uoyka"; // 公式LINE ID
         let message = "";
 
-        if (type === 'thanks') {
-            message = "LINE交換を押して頂きありがとうございます。このまま送信ボタンを押してください。私からあらためてメッセージいたします。（もしお手数でなければ一言メッセージを添えて頂けると喜びます）";
-        } else if (type === 'request') {
-            message = "興味を持って頂きありがとうございます。資料請求/1on1申し込み、どちらかを残してそのまま送信してください。";
+        switch(type) {
+            case 'rx':
+                message = "受け取った処方箋の画像を写真を撮って送ってください";
+                break;
+            case 'consult':
+                message = "相談内容をお気軽に入力してください";
+                break;
+            case 'shop':
+                message = "ご希望のサプリと数量を入力してください。初回購入や相談をご希望の場合は「相談希望」と送信してください";
+                break;
+            case 'exchange':
+                message = "LINE交換を押して頂きありがとうございます。このまま送信ボタンを押してください。私からあらためてメッセージいたします。（もしお手数でなければ一言メッセージを添えて頂けると喜びます）";
+                break;
         }
         
         const encodedMessage = encodeURIComponent(message);
-        const lineUrl = `https://line.me/R/oaMessage/${lineId}/?${encodedMessage}`;
-        window.location.href = lineUrl;
+        window.location.href = `https://line.me/R/oaMessage/${lineId}/?${encodedMessage}`;
     }
 
     function startDemo() {
