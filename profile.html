@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>薬剤師 ろぎー | 公式LP名刺</title>
+    <title>薬剤師 ろぎー - お守りデジタル名刺</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #00897b; /* 薬剤師らしい清潔感のあるティール */
-            --accent-color: #e91e63; /* お写真のピンクに合わせたアクセント */
-            --text-main: #263238;
-            --text-sub: #546e7a;
-            --bg-color: #ffffff;
-            --section-bg: #f1f8f6;
+            --primary-color: #00a86b;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
             --line-color: #06C755;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1c1e;
+                --card-bg: #2d2f31;
+                --text-main: #f1f2f6;
+                --text-sub: #b2bec3;
+            }
         }
 
         body {
@@ -21,402 +29,195 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 0;
-            line-height: 1.8;
-            overflow-x: hidden;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #fff;
-            position: relative;
+            max-width: 480px;
+            width: 100%;
         }
 
-        /* =========================================
-           1. ファーストビュー（インパクト）
-           ========================================= */
-        .fv-section {
-            position: relative;
-            padding: 60px 20px 40px;
-            text-align: center;
-            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
-        }
-
-        .fv-profile-img {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            border: 8px solid #fff;
-            object-fit: cover;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        /* --- ① お守りボタン（正方形3連） --- */
+        .omamori-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             margin-bottom: 25px;
         }
 
-        .fv-catch-phrase {
-            display: inline-block;
-            background: var(--accent-color);
-            color: white;
-            padding: 6px 16px;
-            border-radius: 25px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3);
-        }
-
-        .fv-title {
-            font-size: 1rem;
-            color: var(--text-sub);
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .fv-name {
-            font-size: 2.2rem;
-            margin: 0 0 20px;
-            color: var(--primary-color);
-            letter-spacing: 0.05em;
-            font-weight: bold;
-        }
-
-        .fv-main-btn {
+        .omamori-btn {
+            aspect-ratio: 1 / 1;
+            background-color: var(--card-bg);
+            border-radius: 15px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            background-color: var(--line-color);
-            color: white;
-            padding: 20px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            box-shadow: 0 10px 20px rgba(6, 199, 85, 0.3);
-            transition: 0.3s;
-        }
-        .fv-main-btn:active { transform: translateY(3px); box-shadow: none; }
-
-        /* =========================================
-           共通セクション設定
-           ========================================= */
-        .section {
-            padding: 60px 20px;
-        }
-
-        .section-title-container {
             text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .section-subtitle {
-            font-size: 0.8rem;
-            color: var(--primary-color);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            margin-bottom: 5px;
-        }
-
-        .section-title {
-            font-size: 1.6rem;
-            margin: 0;
-            font-weight: bold;
+            text-decoration: none;
             color: var(--text-main);
-            position: relative;
-            display: inline-block;
-            padding-bottom: 15px;
-        }
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 3px;
-            background: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: 0.2s;
+            padding: 8px;
+            border: 1px solid rgba(0,168,107,0.1);
         }
 
-        /* =========================================
-           2. ストーリー（想い）
-           ========================================= */
-        .story-section {
-            background-color: var(--bg-color);
-        }
+        .omamori-btn:active { transform: scale(0.95); }
+        .omamori-icon { font-size: 1.5rem; margin-bottom: 8px; }
+        .omamori-label { font-size: 0.65rem; font-weight: bold; line-height: 1.3; }
 
-        .story-text {
-            font-size: 0.95rem;
-            line-height: 2;
-            color: var(--text-main);
-            text-align: justify;
-        }
-        .story-highlight {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
+        /* --- プロフィール・ヒーロー装飾 --- */
+        .hero { text-align: center; padding: 10px 0 20px; }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); margin-bottom: 15px; }
+        .catch-phrase { font-size: 0.75rem; font-weight: bold; color: #e91e63; margin-bottom: 5px; display: block; }
+        .hero h1 { font-size: 1.3rem; margin: 0 0 8px; color: var(--primary-color); }
+        .hero p { font-size: 0.8rem; line-height: 1.5; color: var(--text-sub); margin: 0; }
 
-        /* =========================================
-           3. サービス/特徴（事例風カード）
-           ========================================= */
-        .service-section {
-            background-color: var(--section-bg);
-        }
-
-        .service-card {
-            background: #fff;
-            padding: 30px;
+        /* --- デモセクション --- */
+        .demo-section {
+            background-color: var(--card-bg);
             border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            display: flex;
-            gap: 20px;
-            align-items: start;
-        }
-
-        .service-icon {
-            font-size: 2.2rem;
-            color: var(--primary-color);
-        }
-
-        .service-card h3 {
-            font-size: 1.1rem;
-            margin: 0 0 10px;
-            color: var(--text-main);
-        }
-
-        .service-card p {
-            font-size: 0.85rem;
-            margin: 0;
-            color: var(--text-sub);
-        }
-
-        /* =========================================
-           4. 経歴・メディア（事例風リスト）
-           ========================================= */
-        .history-section {
-            background-color: var(--bg-color);
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        .history-table tr {
-            border-bottom: 1px solid #eee;
-        }
-        .history-table tr:last-child {
-            border-bottom: none;
-        }
-
-        .history-year {
-            padding: 15px 10px 15px 0;
-            font-weight: bold;
-            color: var(--primary-color);
-            vertical-align: top;
-            width: 80px;
-        }
-
-        .history-content {
-            padding: 15px 0;
-            color: var(--text-main);
-        }
-
-        .media-list {
-            margin-top: 30px;
-            list-style: none;
-            padding: 0;
-        }
-        .media-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .media-category {
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: var(--accent-color);
-            background: rgba(233, 30, 99, 0.1);
-            padding: 3px 10px;
-            border-radius: 4px;
-            min-width: 60px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             text-align: center;
-        }
-        .media-title {
-            font-size: 0.9rem;
-            color: var(--text-main);
+            margin-bottom: 25px;
         }
 
-        /* =========================================
-           フッター・SNS
-           ========================================= */
-        footer {
-            text-align: center;
-            padding: 60px 20px 40px;
-            background: #263238;
-            color: #b0bec5;
+        .btn-demo { background: linear-gradient(135deg, var(--primary-color), #00c9b7); color: white; width: 100%; border: none; cursor: pointer; }
+
+        /* --- セクションタイトル --- */
+        .section-title {
+            font-size: 0.95rem;
+            margin: 25px 0 12px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+            font-weight: bold;
         }
 
-        .sns-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .sns-icon {
-            font-size: 1.5rem;
-            color: #b0bec5;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .sns-icon:hover { color: #fff; }
+        /* --- 経歴リスト --- */
+        .history-list { font-size: 0.8rem; line-height: 1.6; color: var(--text-sub); list-style: none; padding: 0 10px; }
+        .history-list li { margin-bottom: 8px; display: flex; }
+        .year { font-weight: bold; color: var(--primary-color); min-width: 55px; display: inline-block; }
 
-        .btn-copy {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-        }
+        /* --- メディア・出演 --- */
+        .media-box { background-color: var(--card-bg); padding: 15px; border-radius: 12px; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 20px; }
+        .media-tag { color: var(--primary-color); font-weight: bold; margin-right: 5px; }
 
-        .copyright {
-            font-size: 0.7rem;
-            margin-top: 20px;
+        /* --- ボタン共通 --- */
+        .btn-container { display: flex; flex-direction: column; gap: 10px; }
+        .btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 14px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: 0.2s;
         }
+        .btn:active { transform: scale(0.97); }
+        .btn-line { background-color: var(--line-color); color: white; }
+        .btn-contact { background-color: #6c757d; color: white; }
 
+        .sns-links { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        .sns-links a { color: var(--text-main); text-decoration: none; font-size: 0.85rem; font-weight: bold; border: 1px solid #ccc; padding: 8px 15px; border-radius: 20px; }
+
+        #demo-status { height: 45px; margin-top: 10px; font-size: 0.8rem; font-weight: bold; }
+        .pulse { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header class="fv-section">
-        <img src="210614_001 - コピー.jpg" alt="薬剤師 ろぎー" class="fv-profile-img">
-        <div>
-            <span class="fv-catch-phrase">話すだけで健康寿命を1歳伸ばす男</span>
-        </div>
-        <div class="fv-title">サプリオタクの薬剤師</div>
-        <h1 class="fv-name">薬剤師 ろぎー</h1>
-        <a href="javascript:void(0);" onclick="sendSupport('consult')" class="fv-main-btn">
-            💬 公式LINEで無料相談する
+    <div class="omamori-grid">
+        <a href="javascript:void(0);" onclick="sendSupport('rx')" class="omamori-btn">
+            <span class="omamori-icon">📄</span>
+            <span class="omamori-label">薬を受け取る<br>(処方箋送信)</span>
         </a>
+        <a href="javascript:void(0);" onclick="sendSupport('consult')" class="omamori-btn">
+            <span class="omamori-icon">💊</span>
+            <span class="omamori-label">薬・サプリの<br>相談をする</span>
+        </a>
+        <a href="javascript:void(0);" onclick="sendSupport('shop')" class="omamori-btn">
+            <span class="omamori-icon">🛍️</span>
+            <span class="omamori-label">サプリの<br>購入</span>
+        </a>
+    </div>
+
+    <header class="hero">
+        <img src="210614_001 - コピー.jpg" alt="薬剤師 ろぎー" class="profile-img">
+        <span class="catch-phrase">話すだけで健康寿命を1歳伸ばす男</span>
+        <h1>薬剤師 ろぎー</h1>
+        <p>サプリメントや薬の継続率を最大化する<br>習慣化プラットフォーム「ろぎーシール」</p>
     </header>
 
-    <section class="section story-section">
-        <div class="section-title-container">
-            <div class="section-subtitle">ABOUT ME</div>
-            <h2 class="section-title">薬剤師としての想い</h2>
-        </div>
-        <div class="story-text">
-            医療現場で多くの患者様と向き合う中で、私はある現実に直面しました。<br>
-            それは、<span class="story-highlight">「薬の飲み忘れ」</span>や<span class="story-highlight">「誤ったサプリメントの選択」</span>が原因で、本来防げたはずの健康被害を受けている方が非常に多いということです。<br><br>
-            「話すだけで健康寿命を1歳伸ばす」<br>
-            私の使命は、ただ薬を渡すことではありません。あなたに一生寄り添う健康のパートナーとして、正しい知識と、継続できる仕組みを届けることです。<br><br>
-            物理的な体験とデジタルを融合させた「ろぎーシール」は、ITに詳しくない方でも無理なく健康を維持できる未来を目指しています。サプリオタクな薬剤師ならではの視点で、あなたの「一生の健康」をサポートします。
-        </div>
+    <section class="demo-section">
+        <h2 style="font-size: 0.85rem; margin-bottom: 15px; color: var(--text-sub);">【NFCシステム デモ体験】</h2>
+        <button class="btn btn-demo" onclick="startDemo()">⚡️ 今日の服薬を記録する（デモ）</button>
+        <div id="demo-status"></div>
     </section>
 
-    <section class="section service-section">
-        <div class="section-title-container">
-            <div class="section-subtitle">SERVICES</div>
-            <h2 class="section-title">私にできること</h2>
-        </div>
+    <h2 class="section-title">経歴・実績</h2>
+    <ul class="history-list">
+        <li><span class="year">2012年</span>よつば薬局菊名 管理薬剤師就任</li>
+        <li><span class="year">2013年</span>健ナビ薬局鶴見 管理薬剤師就任</li>
+        <li><span class="year">2018年</span>フリー薬剤師本舗 開業</li>
+        <li><span class="year">2024年</span>一般社団法人 日本血糖値協会 理事就任</li>
+    </ul>
 
-        <div class="service-card">
-            <div class="service-icon">💊</div>
-            <div>
-                <h3>薬・サプリメントの相談</h3>
-                <p>あなたの体質や目的に合ったサプリメントの選び方、薬との飲み合わせについて専門的にアドバイスします。</p>
-            </div>
-        </div>
+    <h2 class="section-title">メディア出演・講演</h2>
+    <div class="media-box">
+        <div><span class="media-tag">TV</span>テレビ神奈川「かながわSHOETIME」</div>
+        <div style="margin-top:5px;"><span class="media-tag">Radio</span>ホンマルラジオ パーソナリティ</div>
+        <div style="margin-top:5px;"><span class="media-tag">YouTube</span>つるみチャンネル / メガロスch 他</div>
+        <div style="margin-top:5px;"><span class="media-tag">講演</span>横浜市会議員主催「悦子の部屋」講師</div>
+    </div>
 
-        <div class="service-card">
-            <div class="service-icon">📄</div>
-            <div>
-                <h3>処方箋受付・事前送信</h3>
-                <p>公式LINEから処方箋を写真を撮って送るだけ。待ち時間を短縮し、スムーズにお薬を受け取れます。</p>
-            </div>
-        </div>
-
-        <div class="service-card">
-            <div class="service-icon">🏷️</div>
-            <div>
-                <h3>ろぎーシール（NFC）配布</h3>
-                <p>スマホをかざすだけで服薬記録ができる「摩擦ゼロ体験」のNFCシールを提供。継続率を最大化します。</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section history-section">
-        <div class="section-title-container">
-            <div class="section-subtitle">PROFILE & MEDIA</div>
-            <h2 class="section-title">経歴・出演実績</h2>
-        </div>
-
-        <table class="history-table">
-            <tr><td class="history-year">2012年</td><td class="history-content">よつば薬局菊名 管理薬剤師就任</td></tr>
-            <tr><td class="history-year">2013年</td><td class="history-content">健ナビ薬局鶴見 管理薬剤師就任</td></tr>
-            <tr><td class="history-year">2015年</td><td class="history-content">予防医学士®プログラム受講</td></tr>
-            <tr><td class="history-year">2018年</td><td class="history-content">フリー薬剤師本舗 開業</td></tr>
-            <tr><td class="history-year">2024年</td><td class="history-content">一般社団法人 日本血糖値協会 理事就任</td></tr>
-        </table>
-
-        <ul class="media-list">
-            <li class="media-item">
-                <span class="media-category">TV</span>
-                <span class="media-title">テレビ神奈川「かながわSHOETIME」</span>
-            </li>
-            <li class="media-item">
-                <span class="media-category">RADIO</span>
-                <span class="media-title">ホンマルラジオ パーソナリティ</span>
-            </li>
-            <li class="media-item">
-                <span class="media-category">YouTube</span>
-                <span class="media-title">つるみチャンネル / メガロスch / 他</span>
-            </li>
-            <li class="media-item">
-                <span class="media-category">SPEECH</span>
-                <span class="media-title">横浜市会議員主催「悦子の部屋」講師</span>
-            </li>
-        </ul>
-    </section>
-
-    <footer>
-        <div class="sns-links">
-            <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank" class="sns-icon">📸</a>
-            </div>
-
-        <button class="btn-copy" onclick="copyContact()">
+    <h2 class="section-title">名刺交換・ご連絡はこちら</h2>
+    <div class="btn-container">
+        <a href="javascript:void(0);" onclick="sendSupport('exchange')" class="btn btn-line">
+            💬 LINEを交換する
+        </a>
+        <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank" class="btn" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white;">
+            📸 Instagramをフォロー
+        </a>
+        <button class="btn btn-contact" onclick="copyContact()">
             📇 連絡先情報をコピー
         </button>
+    </div>
 
-        <div class="copyright">
-            &copy; 2026 ろぎーシール Project / フリー薬剤師本舗<br>
-            All Rights Reserved.
-        </div>
+    <div class="sns-links">
+        <a href="https://www.instagram.com/yakuzaishi.loggy" target="_blank">Instagram</a>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; font-size: 0.7rem; color: #ccc; padding-bottom: 20px;">
+        &copy; 2026 ろぎーシール Project
     </footer>
 </div>
 
 <script>
-    // 公式LINEへのメッセージ送信
     function sendSupport(type) {
-        const lineId = "@534uoyka"; // 公式LINE ID
+        const lineId = "@534uoyka"; 
         let message = "";
         switch(type) {
             case 'rx': message = "受け取った処方箋の画像を写真を撮って送ってください"; break;
             case 'consult': message = "相談内容をお気軽に入力してください"; break;
-            case 'shop': message = "ご希望のサプリと数量を入力してください"; break;
+            case 'shop': message = "ご希望のサプリと数量を入力してください。初回購入や相談をご希望の場合は「相談希望」と送信してください"; break;
+            case 'exchange': message = "LINE交換を押して頂きありがとうございます。このまま送信ボタンを押してください。私からあらためてメッセージいたします。"; break;
         }
         const encodedMessage = encodeURIComponent(message);
         window.location.href = `https://line.me/R/oaMessage/${lineId}/?${encodedMessage}`;
     }
 
-    // 連絡先情報のコピー
+    function startDemo() {
+        const status = document.getElementById('demo-status');
+        const btn = document.querySelector('.btn-demo');
+        btn.disabled = true;
+        status.innerHTML = '<p class="pulse" style="color:var(--primary-color)">📡 NFC信号を送信中...</p>';
+        setTimeout(() => {
+            status.innerHTML = '<p style="color: var(--primary-color);">✅ 認証完了！<br>管理シートへの記録をシミュレートしました</p>';
+            alert("デモ体験ありがとうございます！\n実際にはシールにかざすだけでこの動作が行われ、同時にLINEへ通知が飛びます。");
+            btn.disabled = false;
+        }, 1500);
+    }
+
     function copyContact() {
         const text = "薬剤師 ろぎー\n【サプリオタクの薬剤師】\nInstagram: yakuzaishi.loggy\nLINE ID: @534uoyka";
         navigator.clipboard.writeText(text).then(() => { alert("連絡先情報をコピーしました！"); });
