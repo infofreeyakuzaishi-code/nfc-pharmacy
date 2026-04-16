@@ -12,6 +12,7 @@
             --card-bg: #ffffff;
             --text-main: #2d3436;
             --empty-color: #bdc3c7;
+            --accent-blue: #3498db;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -27,7 +28,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px 15px;
+            padding: 20px 15px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -40,7 +41,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .card-id-badge {
@@ -55,58 +56,74 @@
         }
 
         h1 { font-size: 1.1rem; margin: 0; }
-        p { font-size: 0.8rem; opacity: 0.8; margin-top: 5px; }
+        p { font-size: 0.75rem; opacity: 0.8; margin-top: 5px; }
 
-        /* 5つのボタン配置用グリッド */
+        /* メインの5スロット（グリッド） */
         .card-menu-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2列 */
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        /* 5つ目のボタンだけ横いっぱいに広げる設定 */
-        .menu-item:last-child {
+        /* 5つ目のスロットを横長にする */
+        .menu-item.slot-5 {
             grid-column: span 2;
             aspect-ratio: auto;
-            height: 100px;
+            height: 80px;
+        }
+
+        /* アクションボタン（相談・処方箋） */
+        .action-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .menu-item {
-            aspect-ratio: 1 / 1;
             background-color: var(--card-bg);
-            border-radius: 24px;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-decoration: none;
             color: var(--text-main);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            border: 2px solid transparent;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
             transition: 0.2s;
             padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid transparent;
         }
 
-        /* 設定済みボタン */
-        .menu-item.active {
-            border-color: rgba(0,168,107,0.2);
+        /* スロット用（正方形） */
+        .slot { aspect-ratio: 1 / 1; }
+
+        /* 下段アクション用（横長） */
+        .action-btn {
+            flex-direction: row;
+            gap: 15px;
+            height: 70px;
+            border-left: 5px solid var(--primary-color);
         }
 
-        /* 未設定ボタン */
-        .menu-item.empty {
-            border: 2px dashed var(--empty-color);
-            background-color: transparent;
+        .menu-item.active { border-color: rgba(0,168,107,0.1); }
+        .menu-item.empty { 
+            border: 2px dashed var(--empty-color); 
+            background-color: transparent; 
             box-shadow: none;
         }
 
-        .menu-item:active { transform: scale(0.95); }
+        .menu-item:active { transform: scale(0.96); }
 
-        .icon { font-size: 2.2rem; margin-bottom: 8px; }
+        .icon { font-size: 2rem; }
+        .action-btn .icon { font-size: 1.5rem; }
         .label { font-size: 0.85rem; font-weight: bold; }
-        .empty-text { font-size: 0.7rem; color: var(--empty-color); margin-top: 5px; }
+        .sub-label { font-size: 0.65rem; color: var(--empty-color); margin-top: 2px; }
 
         footer {
-            margin-top: 40px;
+            margin-top: 30px;
             font-size: 0.7rem;
             color: var(--empty-color);
             text-align: center;
@@ -117,36 +134,48 @@
 
 <div class="container">
     <header>
-        <div class="card-id-badge">ID: <span id="display-id">----</span></div>
-        <h1>管理カードメニュー</h1>
-        <p>ボタンを押して記録・相談をしてください</p>
+        <div class="card-id-badge">CARD ID: <span id="display-id">----</span></div>
+        <h1>スマート管理メニュー</h1>
+        <p>かざして、えらんで、健康を記録。</p>
     </header>
 
     <div class="card-menu-grid" id="menu-container">
-        <a href="javascript:void(0);" onclick="handleAction('0001')" class="menu-item active">
+        <a href="javascript:void(0);" onclick="handleAction('slot1')" class="menu-item slot active">
             <span class="icon">☀️</span>
             <span class="label">朝の薬</span>
         </a>
-
-        <a href="javascript:void(0);" onclick="handleAction('0002')" class="menu-item active">
+        <a href="javascript:void(0);" onclick="handleAction('slot2')" class="menu-item slot active">
             <span class="icon">💊</span>
             <span class="label">ビタミンC</span>
         </a>
-
-        <div class="menu-item empty">
+        <div class="menu-item slot empty">
             <span class="icon" style="opacity: 0.3;">➕</span>
-            <span class="label" style="color: #bdc3c7;">未設定</span>
-            <span class="empty-text">タップして登録</span>
+            <span class="label" style="color:#bdc3c7;">未設定</span>
         </div>
-
-        <div class="menu-item empty">
+        <div class="menu-item slot empty">
             <span class="icon" style="opacity: 0.3;">➕</span>
-            <span class="label" style="color: #bdc3c7;">未設定</span>
+            <span class="label" style="color:#bdc3c7;">未設定</span>
         </div>
+        <a href="javascript:void(0);" onclick="handleAction('slot5')" class="menu-item slot-5 active">
+            <span class="icon" style="font-size: 1.5rem; margin-right: 10px;">🌙</span>
+            <span class="label">夜の薬（就寝前）</span>
+        </a>
+    </div>
 
-        <a href="javascript:void(0);" onclick="handleAction('consult')" class="menu-item active">
-            <span class="icon" style="font-size: 1.8rem;">💬</span>
-            <span class="label">薬剤師に相談する</span>
+    <div class="action-container">
+        <a href="javascript:void(0);" onclick="sendSupport('consult')" class="menu-item action-btn">
+            <span class="icon">💬</span>
+            <div style="text-align: left;">
+                <div class="label">薬剤師に相談する</div>
+                <div class="sub-label">薬や健康の悩みをLINEで直接相談</div>
+            </div>
+        </a>
+        <a href="javascript:void(0);" onclick="sendSupport('rx')" class="menu-item action-btn" style="border-left-color: var(--accent-blue);">
+            <span class="icon">📄</span>
+            <div style="text-align: left;">
+                <div class="label">薬を受け取る（処方箋送信）</div>
+                <div class="sub-label">スマホで撮って送るだけで調剤予約</div>
+            </div>
         </a>
     </div>
 
@@ -156,14 +185,22 @@
 </div>
 
 <script>
-    // URLから?item=1001を取得して表示に反映
     const urlParams = new URLSearchParams(window.location.search);
     const cardId = urlParams.get('item') || '1000';
     document.getElementById('display-id').innerText = cardId;
 
-    function handleAction(itemId) {
-        // ここにGAS連携やLINE送信の処理が入ります
-        alert("アイテムID [" + itemId + "] を実行します。\n(実際にはここにLINE送信やGAS記録が入ります)");
+    const lineId = "@534uoyka";
+
+    function handleAction(slotId) {
+        alert("スロット [" + slotId + "] の記録をGASへ送信します。");
+    }
+
+    function sendSupport(type) {
+        let message = "";
+        if(type === 'rx') message = "【処方箋送信】画像の添付をお願いします。";
+        if(type === 'consult') message = "【健康相談】お気軽にご入力ください。";
+        
+        window.location.href = `https://line.me/R/oaMessage/${lineId}/?${encodeURIComponent(message)}`;
     }
 </script>
 
