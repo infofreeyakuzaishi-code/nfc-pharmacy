@@ -60,16 +60,24 @@
 </div>
 
 <script>
+    // ★新しいGASのURLに更新してください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
     const LIFF_BASE_URL = "https://liff.line.me/2009771327-tpjaCzG9";
-    const LINE_ID = "@534uoyka";
 
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
-        const currentItem = params.get('item') || '1001';
+        // URLから親IDを取得（例: card.html?item=rg-card-8f2a）
+        const currentItem = params.get('item'); 
+        
+        if (!currentItem) {
+            document.getElementById('loader').innerText = "エラー: IDが見つかりません";
+            return;
+        }
+
         document.getElementById('display-id').innerText = currentItem;
 
         try {
+            // GASへ親IDを送信して、紐づく子IDと名前を取得
             const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
             const buttons = await response.json();
 
@@ -80,29 +88,24 @@
                     const labelEl = el.querySelector('.label');
                     
                     if (btn.name && btn.name !== "未設定") {
-                        // ★ここを修正しました
-                        labelEl.innerHTML = `💊${btn.name}<span class="sub-label">飲んだらタップ</span>`;
+                        labelEl.innerHTML = `💊 ${btn.name}<span class="sub-label">飲んだらタップ</span>`;
                     } else {
                         labelEl.innerText = "＋新規登録";
                         el.style.opacity = "0.6";
                     }
 
+                    // ランダムな子ID（btn-xxxxxx）を使ってLINEに飛ばす
                     el.onclick = () => {
                         if (btn.id) window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`;
                     };
                 }
             });
         } catch (e) {
-            console.error("GAS通信エラー:", e);
+            console.error("通信エラー:", e);
         } finally {
             document.getElementById('loader').style.display = "none";
         }
     };
-
-    function sendLineSupport(type) {
-        let msg = type === 'rx' ? "処方箋の写真を送ります" : "薬剤師に相談したいです";
-        window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
-    }
 </script>
 </body>
 </html>
