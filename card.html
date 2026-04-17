@@ -5,110 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ろぎーシール管理カード</title>
     <style>
-        /* デザイン部分は以前のものを継承・最適化 */
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; width: 90%; max-width: 400px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; }
-        .header h1 { margin: 0; font-size: 22px; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 15px; padding: 20px; text-align: center; transition: all 0.3s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
-        .menu-item.active { border-color: #667eea; background: #f8faff; }
-        .menu-item.active:active { transform: scale(0.95); background: #edf2f7; }
-        .menu-item.empty { opacity: 0.5; cursor: default; }
-        .icon { font-size: 30px; margin-bottom: 8px; }
-        .label { font-size: 14px; font-weight: bold; color: #4a5568; line-height: 1.2; }
-        .footer-btns { padding: 0 20px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.2s; }
-        .btn-rx { background: #48bb78; color: white; }
-        .btn-chat { background: #edf2f7; color: #4a5568; }
+        .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 20px; }
+        
+        /* ヘッダーデザイン */
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+        
+        /* 使い方ガイド */
+        .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
+        .guide-box strong { color: #667eea; }
+
+        /* メニューグリッド */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
+        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 20px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 110px; }
+        .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
+        .menu-item.active:active { transform: scale(0.95); background: #f0f4ff; }
+        .icon { font-size: 32px; margin-bottom: 8px; }
+        .label { font-size: 15px; font-weight: bold; color: #2d3748; }
+
+        /* 下部アクションボタン（横並びで強調） */
+        .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn-rx { background-color: #48bb78; color: white; box-shadow: 0 4px 10px rgba(72,187,120,0.3); }
+        .btn-chat { background-color: #4a5568; color: white; box-shadow: 0 4px 10px rgba(74,85,104,0.3); }
+        .btn-action:active { transform: translateY(2px); box-shadow: none; }
+        .btn-icon { font-size: 20px; margin-bottom: 4px; }
+        .btn-text { font-size: 13px; }
+
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="loader">データを読み込み中...</div>
+    <div id="loader">読み込み中...</div>
     
     <div class="header">
         <h1>サプリメント管理</h1>
         <p>カードID: <span id="display-id">----</span></p>
     </div>
 
+    <div class="guide-box">
+        💊 <strong>記録：</strong>ボタンを押すと公式LINEで服薬を記録します。<br>
+        📝 <strong>設定：</strong>「＋新規登録」を押して名前を送ると登録完了。<br>
+        ⚙️ <strong>変更：</strong>LINEで「設定確認」と送れば変更可能です。
+    </div>
+
     <div class="menu-grid">
-        <div id="slot-0001" class="menu-item empty">
-            <div class="icon">☀️</div>
-            <div class="label">未設定</div>
-        </div>
-        <div id="slot-0002" class="menu-item empty">
+        <div id="slot-0001" class="menu-item active">
             <div class="icon">💊</div>
-            <div class="label">未設定</div>
+            <div class="label">読み込み中</div>
         </div>
-        <div id="slot-0003" class="menu-item empty">
-            <div class="icon">🍋</div>
-            <div class="label">未設定</div>
+        <div id="slot-0002" class="menu-item active">
+            <div class="icon">💊</div>
+            <div class="label">読み込み中</div>
         </div>
-        <div id="slot-0004" class="menu-item empty">
-            <div class="icon">💪</div>
-            <div class="label">未設定</div>
+        <div id="slot-0003" class="menu-item active">
+            <div class="icon">💊</div>
+            <div class="label">読み込み中</div>
+        </div>
+        <div id="slot-0004" class="menu-item active">
+            <div class="icon">💊</div>
+            <div class="label">読み込み中</div>
         </div>
     </div>
 
-    <div class="footer-btns">
-        <button class="btn btn-rx" onclick="sendLineSupport('rx')">処方箋送信</button>
-        <button class="btn btn-chat" onclick="sendLineSupport('chat')">薬剤師相談</button>
+    <div class="action-area">
+        <button class="btn-action btn-rx" onclick="sendLineSupport('rx')">
+            <span class="btn-icon">📸</span>
+            <span class="btn-text">処方箋を送信</span>
+        </button>
+        <button class="btn-action btn-chat" onclick="sendLineSupport('chat')">
+            <span class="btn-icon">💬</span>
+            <span class="btn-text">薬剤師に相談</span>
+        </button>
     </div>
 </div>
 
 <script>
-    // ★ご自身のGASウェブアプリURLに差し替えてください
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzfP06vU6h4vR3N-2_O3oQ_V3Z6A13mI_Z_H_Z/exec"; 
     const LINE_ID = "@534uoyka";
 
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
         const currentItem = params.get('item') || '1001';
         
-        // --- 1. itemIDが1000未満（子ID）なら、そのままLINEへ飛ばして記録/設定 ---
         if (parseInt(currentItem) < 1000) {
             const msg = `item=${currentItem}`;
             window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
             return;
         }
 
-        // --- 2. カードIDの表示 ---
         const displayEl = document.getElementById('display-id');
         if (displayEl) displayEl.innerText = currentItem;
 
-        // --- 3. GASからボタン情報を取得 ---
         try {
             const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
             const buttons = await response.json();
 
             buttons.forEach((btn, index) => {
-                const slotNum = index + 1;
-                const el = document.getElementById(`slot-000${slotNum}`);
-                
+                const el = document.getElementById(`slot-000${index + 1}`);
                 if (el) {
-                    el.classList.remove('empty');
-                    el.classList.add('active');
                     const labelEl = el.querySelector('.label');
-
-                    // 名前があればその名前を、なければ「新規登録」を表示
                     if (btn.name && btn.name !== "" && btn.name !== "未設定") {
                         labelEl.innerText = btn.name;
                     } else {
                         labelEl.innerText = "＋新規登録";
-                        el.style.opacity = "0.7"; // 未登録ボタンを少し薄くする
+                        el.style.opacity = "0.6";
                     }
 
-                    // ボタンクリックでそのID（0001等）を持ってリロード
-                    // リロード後は step 1 の処理によりLINEへ飛び、GAS側で設定が始まります
                     el.onclick = () => {
                         if (btn.id) {
                             window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
                         } else {
-                            alert("この枠のIDがスプレッドシートに設定されていません。");
+                            alert("この枠にIDが割り当てられていません。");
                         }
                     };
                 }
@@ -122,7 +134,7 @@
     };
 
     function sendLineSupport(type) {
-        let msg = type === 'rx' ? "処方箋の写真を送ってください" : "相談内容を入力してください";
+        let msg = type === 'rx' ? "処方箋の写真を送ります" : "薬剤師に相談したいです";
         window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
     }
 </script>
