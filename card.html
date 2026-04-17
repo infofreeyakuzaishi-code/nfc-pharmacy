@@ -6,32 +6,31 @@
     <title>ろぎーシール管理カード</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 20px; }
+        .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 10px; }
         
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
         
         .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
-        .guide-box strong { color: #667eea; }
 
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
         .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 20px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 110px; }
-        
-        /* 読み込み中・未設定の状態 */
-        .menu-item.loading { opacity: 0.5; cursor: wait; }
         .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
-        .menu-item.active:active { transform: scale(0.95); background: #f0f4ff; }
-
         .icon { font-size: 32px; margin-bottom: 8px; }
         .label { font-size: 15px; font-weight: bold; color: #2d3748; }
 
         .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .btn-rx { background-color: #48bb78; color: white; box-shadow: 0 4px 10px rgba(72,187,120,0.3); }
-        .btn-chat { background-color: #4a5568; color: white; box-shadow: 0 4px 10px rgba(74,85,104,0.3); }
-        .btn-icon { font-size: 20px; margin-bottom: 4px; }
-        .btn-text { font-size: 13px; }
+        .btn-rx { background-color: #48bb78; color: white; }
+        .btn-chat { background-color: #4a5568; color: white; }
+
+        /* --- 広告バナーエリア --- */
+        .ad-container { padding: 10px 20px 10px; text-align: center; }
+        .ad-banner { display: block; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .ad-banner:active { transform: scale(0.98); }
+        .ad-banner img { width: 100%; height: auto; vertical-align: middle; }
+        .ad-tag { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 4px; padding-right: 5px; }
 
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
@@ -44,72 +43,64 @@
         <h1>サプリメント管理</h1>
         <p>カードID: <span id="display-id">----</span></p>
     </div>
+    
     <div class="guide-box">
         💊 <strong>記録：</strong>ボタンを押すと公式LINEで服薬を記録します。<br>
-        📝 <strong>設定：</strong>LINEで初期設定時に名前と飲む回数を送信してください。<br>
-        ⚙️ <strong>変更：</strong>LINEで「設定確認」と送って変更方法をご確認ください。
+        📝 <strong>設定：</strong>LINEで名前と飲む回数を送ると登録完了。
     </div>
+
     <div class="menu-grid">
-        <div id="slot-0001" class="menu-item loading"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-0002" class="menu-item loading"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-0003" class="menu-item loading"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-0004" class="menu-item loading"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
     </div>
+
     <div class="action-area">
-        <button class="btn-action btn-rx" onclick="sendLineSupport('rx')"><span class="btn-icon">📸</span><span class="btn-text">処方箋を送信</span></button>
-        <button class="btn-action btn-chat" onclick="sendLineSupport('chat')"><span class="btn-icon">💬</span><span class="btn-text">薬剤師に相談</span></button>
+        <button class="btn-action btn-rx" onclick="sendLineSupport('rx')"><span>📸</span><span class="btn-text">処方箋を送信</span></button>
+        <button class="btn-action btn-chat" onclick="sendLineSupport('chat')"><span>💬</span><span class="btn-text">薬剤師に相談</span></button>
+    </div>
+
+    <div class="ad-container">
+        <div class="ad-tag">ADVERTISEMENT</div>
+        <a href="https://example.com/ad-link" class="ad-banner" target="_blank">
+            <img src="https://via.placeholder.com/400x100?text=AD+BANNER+HERE" alt="広告バナー">
+        </a>
     </div>
 </div>
 
 <script>
-    // ★ご自身のGAS URLに書き換えてください
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    const LINE_ID = "@534uoyka";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzfP06vU6h4vR3N-2_O3oQ_V3Z6A13mI_Z_H_Z/exec"; 
     const LIFF_BASE_URL = "https://liff.line.me/2009771327-tpjaCzG9";
+    const LINE_ID = "@534uoyka";
 
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
         const currentItem = params.get('item') || '1001';
-        
-        const displayEl = document.getElementById('display-id');
-        if (displayEl) displayEl.innerText = currentItem;
+        document.getElementById('display-id').innerText = currentItem;
 
         try {
-            // GASから親IDに基づいた子IDリスト（4件分）を取得
             const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
             const buttons = await response.json();
 
             buttons.forEach((btn, index) => {
-                const el = document.getElementById(`slot-000${index + 1}`);
+                const el = document.getElementById(`slot-${index}`);
                 if (el) {
-                    el.classList.remove('loading');
                     el.classList.add('active');
                     const labelEl = el.querySelector('.label');
-
-                    // スプレッドシートに名称があるかチェック
-                    if (btn.name && btn.name !== "" && btn.name !== "未設定") {
+                    if (btn.name && btn.name !== "未設定") {
                         labelEl.innerText = btn.name;
-                        el.style.opacity = "1.0";
                     } else {
                         labelEl.innerText = "＋新規登録";
                         el.style.opacity = "0.6";
                     }
-
-                    // 子IDに基づいたLIFFリンクを設定
-                    el.onclick = () => {
-                        if (btn.id) {
-                            window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`;
-                        } else {
-                            alert("スプレッドシートにIDが設定されていません。");
-                        }
-                    };
+                    el.onclick = () => { if (btn.id) window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`; };
                 }
             });
         } catch (e) {
             console.error("GAS通信エラー:", e);
         } finally {
-            const loader = document.getElementById('loader');
-            if (loader) loader.style.display = "none";
+            document.getElementById('loader').style.display = "none";
         }
     };
 
