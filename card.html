@@ -3,37 +3,85 @@
     const LINE_ID = "@534uoyka";
 
     window.onload = async function() {
-        const params = new URLSearchParams(window.location.search);
-        const currentItem = params.get('item') || '1001';
-        
-        // --- 1. itemIDが1000未満（子ID）なら、そのままLINEへ飛ばして記録 ---
-        if (parseInt(currentItem) < 1000) {
-            const msg = `item=${currentItem}`;
-            window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
-            return;
+    const params = new URLSearchParams(window.location.search);
+    const currentItem = params.get('item') || '1001';
+    
+    // --- 1. itemIDが1000未満（子ID）なら、そのままLINEへ飛ばして記録 ---
+    if (parseInt(currentItem) < 1000) {
+        const msg = `item=${currentItem}`;
+        window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
+        return;
+    }
+
+    // --- 2. エラー防止：display-id という要素がある場合のみ書き込む ---
+    const displayEl = document.getElementById('display-id');
+    if (displayEl) {
+        displayEl.innerText = currentItem;
+    }
+
+    // --- 3. GASからボタン情報を取得 ---
+    try {
+        const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
+        const buttons = await response.json();
+
+        buttons.forEach((btn, index) => {
+            const slotNum = index + 1;
+            const el = document.getElementById(`slot-000${slotNum}`);
+            
+            // ボタンが存在し、かつスプレッドシートに名称が入っている場合のみ有効化
+            if (el && btn.name && btn.name !== "未設定") {
+                el.classList.remove('empty');
+                el.classList.add('active');
+                el.querySelector('.label').innerText = btn.name;
+                
+                // ボタンを押すと、その子IDでリロードされる
+                el.onclick = () => {
+                    window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
+                };
+            }
+        });
+    } catch (e) { 
+        console.error("GAS通信エラー:", e); 
+    } finally {
+        // ローダーを消す（要素チェック付き）
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = "none";
         }
+    }
+};
+      try {
+        const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
+        const buttons = await response.json();
 
-        // --- 2. itemIDが1000以上（親ID）なら、メニューを表示 ---
-        document.getElementById('display-id').innerText = currentItem;
-        try {
-            const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
-            const buttons = await response.json();
-
-            buttons.forEach((btn, index) => {
-                const el = document.getElementById(`slot-000${index + 1}`);
-                if (btn.name && btn.name !== "未設定") {
-                    el.classList.remove('empty');
-                    el.classList.add('active');
-                    el.querySelector('.label').innerText = btn.name;
-                    // ボタンクリックで ?item=0003 などにリロード
-                    el.onclick = () => {
-                        window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
-                    };
+        buttons.forEach((btn, index) => {
+            // indexは0から始まるので +1 して slot-0001, slot-0002... を探す
+            const el = document.getElementById(`slot-000${index + 1}`);
+            
+            // ★ここが大事！「ボタンが見つかり」かつ「名前にデータがある」時だけ実行
+            if (el && btn.name && btn.name !== "未設定") {
+                el.classList.remove('empty');
+                el.classList.add('active');
+                
+                // ラベル（名前）を書き込む
+                const labelEl = el.querySelector('.label');
+                if (labelEl) {
+                    labelEl.innerText = btn.name;
                 }
-            });
-        } catch (e) { console.error(e); }
-        document.getElementById('loader').style.display = "none";
-    };
+                
+                // ボタンを押した時の動き（子IDで自分をリロード）
+                el.onclick = () => {
+                    window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
+                };
+            }
+        });
+    } catch (e) {
+        console.error("GAS通信エラー:", e);
+    } finally {
+        // ローダーを消す
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = "none";
+    }
 
     function sendLineSupport(type) {
         let msg = type === 'rx' ? "処方箋の写真を送ってください" : "相談内容を入力してください";
