@@ -1,199 +1,42 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スマート管理カード - ろぎーシールHub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #00a86b;
-            --bg-color: #f0f4f8;
-            --card-bg: #ffffff;
-            --text-main: #2d3436;
-            --empty-color: #bdc3c7;
-            --accent-blue: #3498db;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #1a1c1e;
-                --card-bg: #2d2f31;
-                --text-main: #f1f2f6;
-            }
-        }
-
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px 15px 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            max-width: 400px;
-            width: 100%;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .card-id-badge {
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 0.7rem;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
-        h1 { font-size: 1.1rem; margin: 0; }
-        p { font-size: 0.75rem; opacity: 0.8; margin-top: 5px; }
-
-        /* 4スロットエリア（2×2の均等配置） */
-        .card-menu-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .menu-item {
-            background-color: var(--card-bg);
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: var(--text-main);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            transition: 0.2s;
-            padding: 15px;
-            box-sizing: border-box;
-            border: 2px solid transparent;
-        }
-
-        /* スロット用（完全な正方形） */
-        .slot { aspect-ratio: 1 / 1; }
-
-        /* アクションボタン（下段の横長ボタン） */
-        .action-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .action-btn {
-            flex-direction: row;
-            gap: 15px;
-            height: 80px;
-            border-left: 6px solid var(--primary-color);
-            justify-content: flex-start;
-            padding-left: 20px;
-        }
-
-        .menu-item.active { border-color: rgba(0,168,107,0.1); }
-        .menu-item.empty { 
-            border: 2px dashed var(--empty-color); 
-            background-color: transparent; 
-            box-shadow: none;
-        }
-
-        .menu-item:active { transform: scale(0.96); }
-
-        .icon { font-size: 2.2rem; }
-        .action-btn .icon { font-size: 1.8rem; }
-        .label { font-size: 0.9rem; font-weight: bold; }
-        .sub-label { font-size: 0.7rem; color: var(--empty-color); margin-top: 3px; }
-
-        footer {
-            margin-top: 40px;
-            font-size: 0.75rem;
-            color: var(--empty-color);
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <div class="card-id-badge">CARD ID: <span id="display-id">----</span></div>
-        <h1>スマート管理メニュー</h1>
-        <p>日々の記録と安心を、この1枚に。</p>
-    </header>
-
-    <div class="card-menu-grid" id="menu-container">
-        <a href="javascript:void(0);" onclick="handleAction('slot1')" class="menu-item slot active">
-            <span class="icon">☀️</span>
-            <span class="label">朝の薬</span>
-        </a>
-        <a href="javascript:void(0);" onclick="handleAction('slot2')" class="menu-item slot active">
-            <span class="icon">💊</span>
-            <span class="label">ビタミンC</span>
-        </a>
-        <div class="menu-item slot empty">
-            <span class="icon" style="opacity: 0.3;">➕</span>
-            <span class="label" style="color:#bdc3c7;">未設定</span>
-        </div>
-        <div class="menu-item slot empty">
-            <span class="icon" style="opacity: 0.3;">➕</span>
-            <span class="label" style="color:#bdc3c7;">未設定</span>
-        </div>
-    </div>
-
-    <div class="action-container">
-        <a href="javascript:void(0);" onclick="sendSupport('consult')" class="menu-item action-btn">
-            <span class="icon">💬</span>
-            <div style="text-align: left;">
-                <div class="label">薬剤師に相談する</div>
-                <div class="sub-label">お悩みや飲み合わせの相談</div>
-            </div>
-        </a>
-        <a href="javascript:void(0);" onclick="sendSupport('rx')" class="menu-item action-btn" style="border-left-color: var(--accent-blue);">
-            <span class="icon">📄</span>
-            <div style="text-align: left;">
-                <div class="label">処方箋を送信する</div>
-                <div class="sub-label">写真を撮って送るだけ</div>
-            </div>
-        </a>
-    </div>
-
-    <footer>
-        &copy; 2026 ろぎーシール Project
-    </footer>
-</div>
-
 <script>
-    // URLからID取得
-    const urlParams = new URLSearchParams(window.location.search);
-    const cardId = urlParams.get('item') || '1000';
-    document.getElementById('display-id').innerText = cardId;
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; // 貼り替え
+    const LINE_ID = "@534uoyka";
 
-    const lineId = "@534uoyka";
-
-    function handleAction(slotId) {
-        // ここにGASへの記録処理を記述
-        console.log("Recording to slot: " + slotId);
-    }
-
-    function sendSupport(type) {
-        let message = "";
-        if(type === 'rx') message = "【処方箋送信】画像の添付をお願いします。";
-        if(type === 'consult') message = "【健康相談】お気軽にご入力ください。";
+    window.onload = async function() {
+        const params = new URLSearchParams(window.location.search);
+        const currentItem = params.get('item') || '1001';
         
-        window.location.href = `https://line.me/R/oaMessage/${lineId}/?${encodeURIComponent(message)}`;
+        // --- 1. itemIDが1000未満（子ID）なら、そのままLINEへ飛ばして記録 ---
+        if (parseInt(currentItem) < 1000) {
+            const msg = `item=${currentItem}`;
+            window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
+            return;
+        }
+
+        // --- 2. itemIDが1000以上（親ID）なら、メニューを表示 ---
+        document.getElementById('display-id').innerText = currentItem;
+        try {
+            const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
+            const buttons = await response.json();
+
+            buttons.forEach((btn, index) => {
+                const el = document.getElementById(`slot-000${index + 1}`);
+                if (btn.name && btn.name !== "未設定") {
+                    el.classList.remove('empty');
+                    el.classList.add('active');
+                    el.querySelector('.label').innerText = btn.name;
+                    // ボタンクリックで ?item=0003 などにリロード
+                    el.onclick = () => {
+                        window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
+                    };
+                }
+            });
+        } catch (e) { console.error(e); }
+        document.getElementById('loader').style.display = "none";
+    };
+
+    function sendLineSupport(type) {
+        let msg = type === 'rx' ? "処方箋の写真を送ってください" : "相談内容を入力してください";
+        window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
     }
 </script>
-
-</body>
-</html>
