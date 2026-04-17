@@ -1,43 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ろぎーシール管理カード</title>
+    <style>
+        /* デザイン部分は以前のものを継承・最適化 */
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: white; width: 90%; max-width: 400px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 15px; padding: 20px; text-align: center; transition: all 0.3s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
+        .menu-item.active { border-color: #667eea; background: #f8faff; }
+        .menu-item.active:active { transform: scale(0.95); background: #edf2f7; }
+        .menu-item.empty { opacity: 0.5; cursor: default; }
+        .icon { font-size: 30px; margin-bottom: 8px; }
+        .label { font-size: 14px; font-weight: bold; color: #4a5568; line-height: 1.2; }
+        .footer-btns { padding: 0 20px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-rx { background: #48bb78; color: white; }
+        .btn-chat { background: #edf2f7; color: #4a5568; }
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="loader">データを読み込み中...</div>
+    
+    <div class="header">
+        <h1>サプリメント管理</h1>
+        <p>カードID: <span id="display-id">----</span></p>
+    </div>
+
+    <div class="menu-grid">
+        <div id="slot-0001" class="menu-item empty">
+            <div class="icon">☀️</div>
+            <div class="label">未設定</div>
+        </div>
+        <div id="slot-0002" class="menu-item empty">
+            <div class="icon">💊</div>
+            <div class="label">未設定</div>
+        </div>
+        <div id="slot-0003" class="menu-item empty">
+            <div class="icon">🍋</div>
+            <div class="label">未設定</div>
+        </div>
+        <div id="slot-0004" class="menu-item empty">
+            <div class="icon">💪</div>
+            <div class="label">未設定</div>
+        </div>
+    </div>
+
+    <div class="footer-btns">
+        <button class="btn btn-rx" onclick="sendLineSupport('rx')">処方箋送信</button>
+        <button class="btn btn-chat" onclick="sendLineSupport('chat')">薬剤師相談</button>
+    </div>
+</div>
+
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; // ここはご自身のものに
+    // ★ご自身のGASウェブアプリURLに差し替えてください
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
     const LINE_ID = "@534uoyka";
 
-    // ★重要：ここを async function にするのがポイントです
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
         const currentItem = params.get('item') || '1001';
         
-        // 1000未満（子ID）ならLINEへ
+        // --- 1. itemIDが1000未満（子ID）なら、そのままLINEへ飛ばして記録/設定 ---
         if (parseInt(currentItem) < 1000) {
             const msg = `item=${currentItem}`;
             window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
             return;
         }
 
-        // display-idの書き込み（要素がある場合のみ）
+        // --- 2. カードIDの表示 ---
         const displayEl = document.getElementById('display-id');
-        if (displayEl) {
-            displayEl.innerText = currentItem;
-        }
+        if (displayEl) displayEl.innerText = currentItem;
 
+        // --- 3. GASからボタン情報を取得 ---
         try {
-            // asyncをつけているので、この await が正しく動きます
             const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
             const buttons = await response.json();
 
             buttons.forEach((btn, index) => {
-                const el = document.getElementById(`slot-000${index + 1}`);
-                if (el && btn.name && btn.name !== "未設定") {
+                const slotNum = index + 1;
+                const el = document.getElementById(`slot-000${slotNum}`);
+                
+                if (el) {
                     el.classList.remove('empty');
                     el.classList.add('active');
-                    
                     const labelEl = el.querySelector('.label');
-                    if (labelEl) {
+
+                    // 名前があればその名前を、なければ「新規登録」を表示
+                    if (btn.name && btn.name !== "" && btn.name !== "未設定") {
                         labelEl.innerText = btn.name;
+                    } else {
+                        labelEl.innerText = "＋新規登録";
+                        el.style.opacity = "0.7"; // 未登録ボタンを少し薄くする
                     }
-                    
+
+                    // ボタンクリックでそのID（0001等）を持ってリロード
+                    // リロード後は step 1 の処理によりLINEへ飛び、GAS側で設定が始まります
                     el.onclick = () => {
-                        window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
+                        if (btn.id) {
+                            window.location.href = window.location.origin + window.location.pathname + "?item=" + btn.id;
+                        } else {
+                            alert("この枠のIDがスプレッドシートに設定されていません。");
+                        }
                     };
                 }
             });
@@ -54,3 +126,6 @@
         window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
     }
 </script>
+
+</body>
+</html>
