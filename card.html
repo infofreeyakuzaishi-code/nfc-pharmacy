@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ろぎーシール管理カード</title>
+    <title>ろぎてむ 管理カード</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 10px; }
@@ -16,16 +16,20 @@
         .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
         .icon { font-size: 32px; margin-bottom: 8px; }
         .label { font-size: 14px; font-weight: bold; color: #2d3748; line-height: 1.4; }
-        /* 補足文字用のスタイル */
         .sub-label { font-size: 10px; font-weight: normal; opacity: 0.7; display: block; margin-top: 4px; }
         .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .btn-rx { background-color: #48bb78; color: white; }
         .btn-chat { background-color: #4a5568; color: white; }
-        .ad-container { padding: 10px 20px 10px; text-align: center; }
-        .ad-banner { display: block; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .ad-banner img { width: 100%; height: auto; vertical-align: middle; }
+        
+        /* 広告スライド用スタイル */
+        .ad-container { padding: 10px 20px 10px; text-align: center; position: relative; }
         .ad-tag { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 4px; padding-right: 5px; }
+        .ad-banner-wrapper { position: relative; width: 100%; height: 80px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; display: none; }
+        .ad-banner.active { opacity: 1; display: block; }
+        .ad-banner img { width: 100%; height: 100%; object-fit: cover; vertical-align: middle; }
+        
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
 </head>
@@ -42,31 +46,55 @@
         📝 <strong>設定：</strong>LINEのメニューの左下のボタンをタップしてください。
     </div>
     <div class="menu-grid">
-        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-0" class="menu-item"><div class="icon"></div><div class="label">読み込み中</div></div>
+        <div id="slot-1" class="menu-item"><div class="icon"></div><div class="label">読み込み中</div></div>
+        <div id="slot-2" class="menu-item"><div class="icon"></div><div class="label">読み込み中</div></div>
+        <div id="slot-3" class="menu-item"><div class="icon"></div><div class="label">読み込み中</div></div>
     </div>
     <div class="action-area">
-        <button class="btn-action btn-rx" onclick="sendLineSupport('rx')"><span>📸</span><span class="btn-text">処方箋を送信</span></button>
-        <button class="btn-action btn-chat" onclick="sendLineSupport('chat')"><span>💬</span><span class="btn-text">薬剤師に相談</span></button>
+        <button class="btn-action btn-rx" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?処方箋送信'"><span>📸</span><span class="btn-text">処方箋を送信</span></button>
+        <button class="btn-action btn-chat" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?相談したい'"><span>💬</span><span class="btn-text">薬剤師に相談</span></button>
     </div>
+
     <div class="ad-container">
-        <div class="ad-tag">ADVERTISEMENT</div>
-        <a href="ads.html" class="ad-banner">
-            <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=広告主様募集中" alt="広告募集バナー">
-        </a>
+        <div class="ad-tag">INFORMATION</div>
+        <div class="ad-banner-wrapper" id="ad-wrapper">
+            <a href="https://your-community-url.com" class="ad-banner active">
+                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=コミュニティはこちら" alt="Community">
+            </a>
+            <a href="https://line.me/ti/g2/your-link" class="ad-banner">
+                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=オープンチャット参加" alt="OpenChat">
+            </a>
+            <a href="ads.html" class="ad-banner">
+                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=広告主様募集中" alt="AdRecruit">
+            </a>
+        </div>
     </div>
 </div>
 
 <script>
-    // ★新しいGASのURLに更新してください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
     const LIFF_BASE_URL = "https://liff.line.me/2009771327-tpjaCzG9";
 
+    // --- スライド切り替えロジック ---
+    function startAdSlideshow() {
+        const ads = document.querySelectorAll('.ad-banner');
+        let currentAd = 0;
+
+        if (ads.length <= 1) return;
+
+        setInterval(() => {
+            ads[currentAd].classList.remove('active');
+            currentAd = (currentAd + 1) % ads.length;
+            ads[currentAd].classList.add('active');
+        }, 3000); // 3000ms = 3秒ごとに切り替え
+    }
+
     window.onload = async function() {
+        // スライド開始
+        startAdSlideshow();
+
         const params = new URLSearchParams(window.location.search);
-        // URLから親IDを取得（例: card.html?item=rg-card-8f2a）
         const currentItem = params.get('item'); 
         
         if (!currentItem) {
@@ -77,7 +105,6 @@
         document.getElementById('display-id').innerText = currentItem;
 
         try {
-            // GASへ親IDを送信して、紐づく子IDと名前を取得
             const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
             const buttons = await response.json();
 
@@ -94,7 +121,6 @@
                         el.style.opacity = "0.6";
                     }
 
-                    // ランダムな子ID（btn-xxxxxx）を使ってLINEに飛ばす
                     el.onclick = () => {
                         if (btn.id) window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`;
                     };
