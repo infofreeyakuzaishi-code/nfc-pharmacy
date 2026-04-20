@@ -11,25 +11,40 @@
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
         .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
+        
+        /* 記録スロット */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
-        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
+        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
         .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
-        .icon { font-size: 32px; margin-bottom: 8px; }
-        .label { font-size: 14px; font-weight: bold; color: #2d3748; line-height: 1.4; }
-        .sub-label { font-size: 10px; font-weight: normal; opacity: 0.7; display: block; margin-top: 4px; }
-        .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .icon { font-size: 28px; margin-bottom: 5px; }
+        .label { font-size: 13px; font-weight: bold; color: #2d3748; }
+        .sub-label { font-size: 9px; font-weight: normal; opacity: 0.7; display: block; margin-top: 2px; }
+
+        /* スタンプエリア */
+        .stamp-section { padding: 0 20px 15px; text-align: center; }
+        .stamp-title { font-size: 12px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .stamp-grid { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; transition: 0.2s; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stamp-btn.visible { display: flex; }
+        .stamp-btn:active { transform: scale(0.9); background: #edf2f7; }
+
+        .action-area { padding: 0 20px 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; border-radius: 15px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-rx { background-color: #48bb78; color: white; }
         .btn-chat { background-color: #4a5568; color: white; }
+
+        /* 広告・進捗スライド */
+        .ad-container { padding: 5px 20px 10px; text-align: center; }
+        .ad-tag { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 4px; }
+        .ad-banner-wrapper { position: relative; width: 100%; height: 70px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #eee; }
+        .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: 0.8s; display: none; text-decoration: none; }
+        .ad-banner.active { opacity: 1; display: flex; align-items: center; justify-content: center; }
+        .ad-banner img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* 広告スライド用スタイル */
-        .ad-container { padding: 10px 20px 10px; text-align: center; position: relative; }
-        .ad-tag { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 4px; padding-right: 5px; }
-        .ad-banner-wrapper { position: relative; width: 100%; height: 80px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; display: none; }
-        .ad-banner.active { opacity: 1; display: block; }
-        .ad-banner img { width: 100%; height: 100%; object-fit: cover; vertical-align: middle; }
-        
+        /* 進捗パネル用スタイル */
+        .status-panel { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); color: white; flex-direction: column; }
+        .status-val { font-size: 20px; font-weight: bold; }
+
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
 </head>
@@ -38,35 +53,48 @@
 <div class="card">
     <div id="loader">読み込み中...</div>
     <div class="header">
-        <h1>ろぎてむ/Loggy-System/</h1>
-        <p>カードID: <span id="display-id">----</span></p>
+        <h1>ろぎてむ/Loggy/</h1>
+        <p>ID: <span id="display-id">----</span></p>
     </div>
+
     <div class="guide-box">
-        💊 <strong>記録：</strong>飲んだあとにボタンをタップしてください。<br>
-        📝 <strong>設定：</strong>LINEのメニューの左下のボタンをタップしてください。
+        💊 記録：飲んだらタップ<br>
+        😊 報告：今日の体調をタップ（継続でスタンプ増加！）
     </div>
-    <div class="menu-grid">
-        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+
+    <div class="stamp-section">
+        <div class="stamp-title"><span>今日の体調報告</span> <span id="stamp-count-text">累計 0回</span></div>
+        <div class="stamp-grid">
+            <button class="stamp-btn visible" onclick="sendStamp('😊')">😊</button>
+            <button class="stamp-btn visible" onclick="sendStamp('😑')">😑</button>
+            <button class="stamp-btn visible" onclick="sendStamp('😫')">😫</button>
+            <button id="st-fire" class="stamp-btn" onclick="sendStamp('🔥')">🔥</button>
+            <button id="st-crown" class="stamp-btn" onclick="sendStamp('👑')">👑</button>
+            <button id="st-dia" class="stamp-btn" onclick="sendStamp('💎')">💎</button>
+        </div>
     </div>
+
+    <div class="menu-grid" id="menu-grid">
+        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+    </div>
+
     <div class="action-area">
-        <button class="btn-action btn-rx" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?処方箋送信'"><span>📸</span><span class="btn-text">処方箋を送信</span></button>
-        <button class="btn-action btn-chat" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?相談したい'"><span>💬</span><span class="btn-text">薬剤師に相談</span></button>
+        <button class="btn-action btn-rx" onclick="sendLine('処方箋送信')"><span>📸</span>処方箋送信</button>
+        <button class="btn-action btn-chat" onclick="sendLine('相談したい')"><span>💬</span>相談する</button>
     </div>
 
     <div class="ad-container">
-        <div class="ad-tag">INFORMATION</div>
+        <div class="ad-tag">INFO / AD</div>
         <div class="ad-banner-wrapper" id="ad-wrapper">
-            <a href="https://your-community-url.com" class="ad-banner active">
-                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=コミュニティはこちら" alt="Community">
-            </a>
-            <a href="https://line.me/ti/g2/your-link" class="ad-banner">
-                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=オープンチャット参加" alt="OpenChat">
-            </a>
-            <a href="ads.html" class="ad-banner">
-                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=広告主様募集中" alt="AdRecruit">
+            <div class="ad-banner status-panel active">
+                <div style="font-size: 10px;">現在の継続ランク</div>
+                <div class="status-val" id="rank-name">ビギナー</div>
+            </div>
+            <a href="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html" class="ad-banner">
+                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/ads.html?text=広告主様募集中" alt="Ad">
             </a>
         </div>
     </div>
@@ -74,64 +102,61 @@
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    const LIFF_BASE_URL = "https://liff.line.me/2009771327-tpjaCzG9";
+    const LIFF_URL = "https://liff.line.me/2009771327-tpjaCzG9";
+    const LINE_OA = "https://line.me/R/oaMessage/@534uoyka/?";
 
-    // --- スライド切り替えロジック ---
-    function startAdSlideshow() {
-        const ads = document.querySelectorAll('.ad-banner');
-        let currentAd = 0;
-
-        if (ads.length <= 1) return;
-
-        setInterval(() => {
-            ads[currentAd].classList.remove('active');
-            currentAd = (currentAd + 1) % ads.length;
-            ads[currentAd].classList.add('active');
-        }, 3000); // 3000ms = 3秒ごとに切り替え
-    }
+    function sendLine(txt) { window.location.href = LINE_OA + encodeURIComponent(txt); }
+    function sendStamp(s) { window.location.href = LINE_OA + encodeURIComponent(s); }
 
     window.onload = async function() {
-        // スライド開始
-        startAdSlideshow();
-
         const params = new URLSearchParams(window.location.search);
-        const currentItem = params.get('item'); 
-        
-        if (!currentItem) {
-            document.getElementById('loader').innerText = "エラー: IDが見つかりません";
-            return;
-        }
-
-        document.getElementById('display-id').innerText = currentItem;
+        const item = params.get('item');
+        if (!item) { document.getElementById('loader').innerText = "ID Error"; return; }
+        document.getElementById('display-id').innerText = item;
 
         try {
-            const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
-            const buttons = await response.json();
+            // GASから設定とスタンプ回数を取得
+            const res = await fetch(`${GAS_URL}?type=getSettings&item=${item}`);
+            const data = await res.json();
+            
+            // 1. スタンプの解放制御
+            const count = data.stamps || 0;
+            document.getElementById('stamp-count-text').innerText = `累計 ${count}回`;
+            if (count >= 3) document.getElementById('st-fire').classList.add('visible');
+            if (count >= 7) document.getElementById('st-crown').classList.add('visible');
+            if (count >= 15) document.getElementById('st-dia').classList.add('visible');
+            
+            // ランク名更新
+            const rank = count >= 15 ? "ダイヤモンド" : count >= 7 ? "ゴールド" : count >= 3 ? "ブロンズ" : "ビギナー";
+            document.getElementById('rank-name').innerText = rank;
 
-            buttons.forEach((btn, index) => {
-                const el = document.getElementById(`slot-${index}`);
-                if (el) {
+            // 2. 記録ボタンの生成
+            data.buttons.forEach((btn, i) => {
+                const el = document.getElementById(`slot-${i}`);
+                if (el && btn.name !== "未設定") {
                     el.classList.add('active');
-                    const labelEl = el.querySelector('.label');
-                    
-                    if (btn.name && btn.name !== "未設定") {
-                        labelEl.innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
-                    } else {
-                        labelEl.innerText = "＋新規登録";
-                        el.style.opacity = "0.6";
-                    }
-
-                    el.onclick = () => {
-                        if (btn.id) window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`;
-                    };
+                    el.querySelector('.label').innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
+                    el.onclick = () => window.location.href = `${LIFF_URL}?item=${btn.id}`;
+                } else if (el) {
+                    el.querySelector('.label').innerText = "+新規登録";
+                    el.style.opacity = "0.5";
+                    el.onclick = () => window.location.href = `${LIFF_URL}?item=${item}_new${i}`;
                 }
             });
-        } catch (e) {
-            console.error("通信エラー:", e);
-        } finally {
-            document.getElementById('loader').style.display = "none";
-        }
+        } catch (e) { console.error(e); }
+        finally { document.getElementById('loader').style.display = "none"; startAds(); }
     };
+
+    function startAds() {
+        const ads = document.querySelectorAll('.ad-banner');
+        let cur = 0;
+        if (ads.length < 2) return;
+        setInterval(() => {
+            ads[cur].classList.remove('active');
+            cur = (cur + 1) % ads.length;
+            ads[cur].classList.add('active');
+        }, 4000);
+    }
 </script>
 </body>
 </html>
