@@ -6,7 +6,7 @@
     <title>身体データ入力</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; margin: 0; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; margin: 0; scroll-behavior: smooth; }
         .form-card { background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: auto; }
         h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 25px; }
         h3 { border-left: 4px solid #764ba2; padding-left: 12px; font-size: 15px; margin: 25px 0 15px; color: #4a5568; background: #f8f9fa; padding-top: 5px; padding-bottom: 5px; }
@@ -16,19 +16,21 @@
         input, textarea { width: 100%; padding: 12px; border: 1.5px solid #edf2f7; border-radius: 12px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; transition: 0.2s; }
         input:focus, textarea:focus { border-color: #764ba2; outline: none; background: #fefaff; }
         
-        /* 送信ボタンの基本スタイル */
+        /* 送信ボタン */
         .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; transition: all 0.3s; }
-        .btn-submit:disabled { background: #cbd5e0; cursor: not-allowed; transform: scale(1); }
         
-        /* 送信完了後のふわっと出現するエリア */
+        /* 送信完了後のボタン状態（グレー） */
+        .btn-submit.completed { background: #a0aec0 !important; cursor: default; transform: scale(1); }
+        
+        /* LINEボタンエリア */
         #after-submit { 
             display: none; 
             text-align: center; 
-            margin-top: 20px; 
+            margin-top: 25px; 
             padding: 20px;
             border-radius: 20px;
-            background: #f0fff4;
-            border: 1px solid #c6f6d5;
+            background: #ffffff;
+            border: 2px solid #06C755;
             animation: fadeInUp 0.6s ease-out forwards;
         }
         .line-btn { 
@@ -45,11 +47,11 @@
             font-weight: bold; 
             font-size: 16px;
             margin-top: 15px;
-            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.2);
+            box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
         }
         
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -87,10 +89,10 @@
         <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
 
         <div id="after-submit">
-            <p style="font-weight: bold; color: #2f855a; margin: 0;">✅ 記録を受け付けました！</p>
-            <p style="font-size: 13px; color: #48bb78; margin: 5px 0 0;">LINE通知を確認してください。</p>
+            <p style="font-weight: bold; color: #2d3748; margin: 0;">✅ 記録を送信しました</p>
+            <p style="font-size: 13px; color: #718096; margin: 5px 0 0;">LINE通知が届いているか確認してください。</p>
             <a href="https://lin.ee/7COjqzB" class="line-btn">
-                <span>LINEで確認する</span>
+                <span>LINEへ戻る</span>
             </a>
         </div>
     </div>
@@ -128,24 +130,27 @@
                     exercise: document.getElementById('exercise').value
                 };
 
-                // 送信
                 fetch(GAS_URL, {
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify(payload)
                 });
 
-                // 演出：ボタンの文字を変え、下のエリアを出す
-                btn.style.background = "#48bb78";
-                btn.innerText = "送信完了！";
+                // --- 送信後の演出 ---
+                btn.classList.add('completed');
+                btn.innerText = "送信完了";
                 
-                // 0.3秒ほど置いてからLINEボタンをふわっと出す
+                // LINEボタンを表示
+                const afterMsg = document.getElementById('after-submit');
+                afterMsg.style.display = 'block';
+
+                // 自動スクロール（新しく出たエリアがしっかり見えるように）
                 setTimeout(() => {
-                    document.getElementById('after-submit').style.display = 'block';
-                }, 300);
+                    afterMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 350);
 
             } catch (e) {
-                alert("送信に失敗しました。");
+                alert("エラーが発生しました。");
                 btn.disabled = false;
                 btn.innerText = "再試行";
             }
