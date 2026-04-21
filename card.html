@@ -12,7 +12,6 @@
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
         
-        /* ① 案内文エリアの復活 */
         .guide-box { background: #f8faff; margin: 15px 20px; padding: 15px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 12px; color: #4a5568; line-height: 1.6; }
         .guide-box strong { color: #667eea; font-size: 13px; }
         .guide-box ul { margin: 5px 0 0; padding-left: 18px; }
@@ -69,10 +68,10 @@
     </div>
 
     <div class="menu-grid" id="menu-grid">
-        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
-        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
     </div>
 
     <div class="ad-container">
@@ -82,7 +81,7 @@
                 <div style="font-size: 18px; font-weight: bold;" id="rank-name">ビギナー</div>
             </div>
             <div class="ad-banner status-panel">
-                <div style="font-size: 12px;">いつもご利用ありがとうございます</div>
+                <div style="font-size: 12px;">体調はいかがですか？</div>
             </div>
         </div>
     </div>
@@ -90,10 +89,9 @@
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    const LIFF_URL = "https://liff.line.me/2009771327-tpjaCzG9";
+    const LIFF_ID = "2009771327-tpjaCzG9";
     const LINE_OA = "https://line.me/R/oaMessage/@534uoyka/?";
 
-    // スタンプ用：LINEのトークにメッセージを送る
     function sendToOA(txt) { window.location.href = LINE_OA + encodeURIComponent(txt); }
 
     window.onload = async function() {
@@ -104,14 +102,15 @@
 
         let uid = "";
         try {
-            await liff.init({ liffId: "2009771327-tpjaCzG9" });
+            await liff.init({ liffId: LIFF_ID });
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
                 uid = profile.userId;
             }
-        } catch (e) { console.error("LIFF取得失敗", e); }
+        } catch (e) { console.error("LIFF初期化エラー:", e); }
 
         try {
+            // userIdを含めてGASからボタン設定を取得
             const res = await fetch(`${GAS_URL}?type=getSettings&item=${item}&userId=${uid}`);
             const data = await res.json();
             
@@ -123,24 +122,26 @@
             const rank = count >= 7 ? "ゴールド" : count >= 3 ? "ブロンズ" : "ビギナー";
             document.getElementById('rank-name').innerText = rank;
 
-            // ② ボタンの割り当て：LIFF URL形式に修正
+            // ボタン割り当ての修正：LIFF URLに ?item= を確実に付与
             data.buttons.forEach((btn, i) => {
                 const el = document.getElementById(`slot-${i}`);
                 if (el) {
                     if (btn.name !== "未設定" && btn.id) {
                         el.classList.add('active');
                         el.querySelector('.label').innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
-                        // 既存の登録済みリンク
-                        el.onclick = () => window.location.href = `${LIFF_URL}?item=${btn.id}`;
+                        // 正しいリンク生成：https://liff.line.me/ID?item=btn-xxx
+                        const targetUrl = `https://liff.line.me/${LIFF_ID}?item=${btn.id}`;
+                        el.onclick = () => { window.location.href = targetUrl; };
                     } else {
                         el.querySelector('.label').innerText = "+新規登録";
                         el.style.opacity = "0.5";
-                        // 新規登録用リンク（親ID_newN という形式で子IDを発行）
-                        el.onclick = () => window.location.href = `${LIFF_URL}?item=${item}_new${i}`;
+                        // 正しいリンク生成：https://liff.line.me/ID?item=card-xxx_new0
+                        const registerUrl = `https://liff.line.me/${LIFF_ID}?item=${item}_new${i}`;
+                        el.onclick = () => { window.location.href = registerUrl; };
                     }
                 }
             });
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("データ取得エラー:", e); }
         finally { document.getElementById('loader').style.display = "none"; startAds(); }
     };
 
