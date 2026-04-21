@@ -13,7 +13,13 @@
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; }
+        
+        /* ボタンのデザイン */
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        
+        /* 送信後のボタン（案内用） */
+        .btn-submit:disabled { background: #a0aec0; color: #edf2f7; cursor: default; font-size: 14px; }
+        .close-guide { margin-top: 15px; font-size: 12px; color: #e53e3e; text-align: center; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -31,40 +37,49 @@
         <div class="input-group"><label>リブレ数値</label><input type="number" id="libre"></div>
         <div class="input-group"><label>備考・運動報告</label><textarea id="exercise" rows="2"></textarea></div>
 
-        <button class="btn-submit" id="submit-btn" onclick="submitViaMessage()">データを記録する</button>
+        <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
+        <div id="guide-msg" class="close-guide">▲ 記録を開始しました。この画面を閉じて、LINEに届く通知をご確認ください。</div>
     </div>
 
     <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+
         liff.init({ liffId: "2009771327-tpjaCzG9" });
 
-        function submitViaMessage() {
+        function submitData() {
             const btn = document.getElementById('submit-btn');
+            const guide = document.getElementById('guide-msg');
+
+            // 1. ボタン表示の切り替え
             btn.disabled = true;
-            btn.innerText = "送信中...";
+            btn.innerText = "送信を開始しました";
+            guide.style.display = "block";
 
-            // 値の取得
-            const val = (id) => document.getElementById(id).value || "なし";
-            
-            // GASが解析しやすいように【身体記録】タグと項目名をセット
-            const msg = "【身体記録】\n" +
-                        "体重:" + val('weight') + "\n" +
-                        "体脂肪率:" + val('fat_pc') + "\n" +
-                        "体脂肪量:" + val('fat_kg') + "\n" +
-                        "筋肉量:" + val('muscle') + "\n" +
-                        "歩数:" + val('steps') + "\n" +
-                        "リブレ:" + val('libre') + "\n" +
-                        "備考:" + val('exercise');
+            // 2. データの収集
+            const payload = {
+                type: "vital_record",
+                weight: document.getElementById('weight').value,
+                fat_pc: document.getElementById('fat_pc').value,
+                fat_kg: document.getElementById('fat_kg').value,
+                muscle: document.getElementById('muscle').value,
+                steps: document.getElementById('steps').value,
+                libre: document.getElementById('libre').value,
+                exercise: document.getElementById('exercise').value
+            };
 
-            liff.sendMessages([{
-                type: 'text',
-                text: msg
-            }]).then(() => {
-                liff.closeWindow(); 
-            }).catch((err) => {
-                alert("エラー: 権限を許可してください\n" + err);
-                btn.disabled = false;
-                btn.innerText = "再試行";
+            // 3. fetchで送信（投げっぱなし・待ち時間を設けない）
+            fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify(payload)
             });
+
+            // 4. 数秒後にさらに案内を強める（念押し）
+            setTimeout(() => {
+                btn.innerText = "完了：画面を閉じてください ✖";
+                // 自動で閉じれる環境なら閉じる
+                liff.closeWindow();
+            }, 1500);
         }
     </script>
 </body>
