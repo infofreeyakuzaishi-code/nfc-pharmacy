@@ -14,7 +14,6 @@
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
         .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; }
-        .btn-submit:disabled { background: #cbd5e0; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -54,9 +53,10 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
         async function submitData() {
+            // 二重送信防止
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
-            btn.innerText = "送信中...";
+            btn.innerText = "記録中...";
             
             try {
                 await liff.init({ liffId: "2009771327-tpjaCzG9" });
@@ -81,20 +81,22 @@
                     exercise: document.getElementById('exercise').value
                 };
 
-                // 送信完了を待ってから次へ
-                await fetch(GAS_URL, {
+                // 送信を「投げっぱなし」にする（レスポンスを待たない）
+                fetch(GAS_URL, {
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify(payload)
                 });
 
-                // 成功時はウィンドウを閉じる
-                liff.closeWindow();
+                // 送信命令を出したら即座に閉じる
+                setTimeout(() => {
+                    liff.closeWindow();
+                }, 100); // 念のため0.1秒だけ待機
 
             } catch (e) {
-                alert("エラーが発生しました: " + e);
+                alert("エラー: " + e);
                 btn.disabled = false;
-                btn.innerText = "再試行する";
+                btn.innerText = "再試行";
             }
         }
     </script>
