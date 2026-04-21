@@ -9,7 +9,7 @@
         body { font-family: sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; }
         .form-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 20px; }
-        h3 { border-left: 4px solid #764ba2; padding-left: 10px; font-size: 16px; margin: 20px 0 10px; color: #4a5568; }
+        h3 { border-left: 4px solid #764ba2; padding-left: 10px; font-size: 14px; margin: 20px 0 10px; color: #4a5568; }
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
@@ -20,7 +20,6 @@
 <body>
     <div class="form-card">
         <h2>📊 身体データ入力</h2>
-        
         <h3>【体組成】</h3>
         <div class="input-group"><label>体重 (kg)</label><input type="number" id="weight" step="0.1"></div>
         <div class="input-group"><label>体脂肪率 (%)</label><input type="number" id="fat_pc" step="0.1"></div>
@@ -40,12 +39,11 @@
                 <input type="number" id="protein_kg" step="0.1" placeholder="kg">
             </div>
         </div>
-
         <h3>【身体データ】</h3>
         <div class="input-group"><label>歩数</label><input type="number" id="steps"></div>
         <div class="input-group"><label>リブレ数値</label><input type="number" id="libre"></div>
         <div class="input-group"><label>血液検査値</label><textarea id="blood" rows="2"></textarea></div>
-        <div class="input-group"><label>運動報告 (コメント)</label><textarea id="exercise" rows="2"></textarea></div>
+        <div class="input-group"><label>運動報告</label><textarea id="exercise" rows="2"></textarea></div>
 
         <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
     </div>
@@ -53,20 +51,24 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
+        // ページ読み込み時に即初期化
+        liff.init({ liffId: "2009771327-tpjaCzG9" }).then(() => {
+            if (!liff.isLoggedIn()) { liff.login(); }
+        });
+
         async function submitData() {
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
             btn.innerText = "送信中...";
-            
+
             try {
-                await liff.init({ liffId: "2009771327-tpjaCzG9" });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                const profile = await liff.getProfile();
-                
+                // IDだけ取得（これが一番失敗しにくい）
+                const context = await liff.getContext();
+                const userId = context.userId;
+
                 const payload = {
                     type: "vital_record",
-                    userId: profile.userId,
-                    displayName: profile.displayName,
+                    userId: userId,
                     weight: document.getElementById('weight').value,
                     fat_pc: document.getElementById('fat_pc').value,
                     fat_kg: document.getElementById('fat_kg').value,
@@ -81,20 +83,21 @@
                     exercise: document.getElementById('exercise').value
                 };
 
-                // 送信完了を待ってから次へ
-                await fetch(GAS_URL, {
+                // 送信
+                fetch(GAS_URL, {
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify(payload)
                 });
 
-                // 成功時はウィンドウを閉じる
-                liff.closeWindow();
+                // 送信完了の演出（no-corsなので即終了でOK）
+                btn.innerText = "完了！画面を閉じます";
+                setTimeout(() => { liff.closeWindow(); }, 1200);
 
             } catch (e) {
-                alert("エラーが発生しました: " + e);
+                alert("送信に失敗しました。LINEから開き直してください。");
                 btn.disabled = false;
-                btn.innerText = "再試行する";
+                btn.innerText = "再試行";
             }
         }
     </script>
