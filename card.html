@@ -6,37 +6,43 @@
     <title>ろぎてむ 管理カード</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 10px; }
+        .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 20px; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
         
-        .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
+        /* 説明欄のアップデート */
+        .guide-box { background: #f8faff; margin: 20px; padding: 15px; border-radius: 15px; border-left: 5px solid #667eea; }
+        .guide-item { display: flex; align-items: flex-start; margin-bottom: 10px; font-size: 13px; color: #4a5568; line-height: 1.5; }
+        .guide-item:last-child { margin-bottom: 0; }
+        .guide-icon { margin-right: 10px; font-size: 16px; width: 20px; text-align: center; }
 
-        /* 体調スタンプ・追加UI */
         .stamp-section { padding: 0 20px 15px; text-align: center; border-bottom: 1px solid #edf2f7; margin-bottom: 15px; }
-        .section-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .stamp-grid { display: flex; justify-content: space-around; gap: 5px; margin-bottom: 10px; }
-        .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 5px; min-width: 45px; cursor: pointer; font-size: 22px; transition: 0.2s; }
-        .vital-full-btn { width: 100%; background: #f8faff; border: 1px solid #667eea; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: bold; color: #667eea; cursor: pointer; margin-top: 5px; }
+        .section-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stamp-grid { display: flex; justify-content: space-around; gap: 8px; margin-bottom: 12px; }
+        .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 5px; min-width: 50px; cursor: pointer; font-size: 24px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stamp-btn:active { transform: scale(1.2); border-color: #667eea; }
+        
+        .vital-full-btn { width: 100%; background: #fff; border: 1.5px solid #667eea; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: bold; color: #667eea; cursor: pointer; transition: 0.2s; }
+        .vital-full-btn:active { background: #f0f4ff; }
 
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
-        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
-        .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
+        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 20px 10px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 110px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .menu-item.active:active { border-color: #667eea; background: #f8faff; }
         .icon { font-size: 32px; margin-bottom: 8px; }
         .label { font-size: 14px; font-weight: bold; color: #2d3748; line-height: 1.4; }
-        .sub-label { font-size: 10px; font-weight: normal; opacity: 0.7; display: block; margin-top: 4px; }
+        .sub-label { font-size: 10px; font-weight: normal; color: #a0aec0; display: block; margin-top: 4px; }
 
-        .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .btn-rx { background-color: #48bb78; color: white; }
-        .btn-chat { background-color: #4a5568; color: white; }
+        .action-area { padding: 0 20px 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-action { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; color: white; }
+        .btn-rx { background-color: #48bb78; }
+        .btn-chat { background-color: #4a5568; }
 
-        .ad-container { padding: 10px 20px 10px; text-align: center; position: relative; }
-        .ad-tag { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 4px; padding-right: 5px; }
-        .ad-banner-wrapper { position: relative; width: 100%; height: 80px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; display: none; }
-        .ad-banner.active { opacity: 1; display: block; }
+        .ad-container { padding: 5px 20px; text-align: center; }
+        .ad-tag { font-size: 9px; color: #cbd5e0; text-align: right; margin-bottom: 4px; }
+        .ad-banner-wrapper { width: 100%; height: 60px; border-radius: 10px; overflow: hidden; }
+        .ad-banner { display: none; width: 100%; height: 100%; }
+        .ad-banner.active { display: block; }
         .ad-banner img { width: 100%; height: 100%; object-fit: cover; }
         
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
@@ -53,21 +59,28 @@
     </div>
 
     <div class="guide-box">
-        💊 <strong>記録：</strong>新規登録後は飲んだらボタンをタップしてください。<br>
-        📝 <strong>設定：</strong>LINEメニューから設定を確認できます。
+        <div class="guide-item">
+            <span class="guide-icon">💊</span>
+            <span><b>記録：</b>飲んだらボタンをタップ。LINEが起動して自動記録されます。</span>
+        </div>
+        <div class="guide-item">
+            <span class="guide-icon">📝</span>
+            <span><b>設定：</b>名前の変更や解除はLINEの「設定確認」から行えます。</span>
+        </div>
     </div>
 
     <div class="stamp-section">
-        <div class="section-title"><span>今日の体調</span></div>
+        <div class="section-title">今日の体調報告</div>
         <div class="stamp-grid">
-            <button class="stamp-btn" onclick="sendToOA('😊 体調良好')">😊</button>
-            <button class="stamp-btn" onclick="sendToOA('😑 ふつう')">😑</button>
-            <button class="stamp-btn" onclick="sendToOA('😫 つらい')">😫</button>
-            <button class="stamp-btn" onclick="sendToOA('🤒 風邪気気味')">🤒</button>
+            <button class="stamp-btn" onclick="sendToOA('😊')">😊</button>
+            <button class="stamp-btn" onclick="sendToOA('😑')">😑</button>
+            <button class="stamp-btn" onclick="sendToOA('😫')">😫</button>
+            <button class="stamp-btn" onclick="sendToOA('🤒')">🤒</button>
         </div>
-        <button class="vital-full-btn" onclick="window.location.href='vital.html'">⚖️ 体組成・身体データを入力する</button>
+        <button class="vital-full-btn" onclick="goToLiff('vital')">⚖️ 体組成・身体データを入力</button>
     </div>
 
+    <div class="section-title" style="margin-left: 20px;">服薬・サプリ記録</div>
     <div class="menu-grid">
         <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
         <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
@@ -76,50 +89,36 @@
     </div>
 
     <div class="action-area">
-        <button class="btn-action btn-rx" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?処方箋の画像を写真で送ってください'"><span>📸</span><span>処方箋を送信</span></button>
-        <button class="btn-action btn-chat" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?相談内容を入力してください'"><span>💬</span><span>薬剤師に相談</span></button>
+        <button class="btn-action btn-rx" onclick="sendToOA('処方箋の画像を写真で送ってください')">📸 処方箋を送信</button>
+        <button class="btn-action btn-chat" onclick="sendToOA('相談内容を入力してください')">💬 薬剤師に相談</button>
     </div>
 
     <div class="ad-container">
         <div class="ad-tag">INFORMATION</div>
         <div class="ad-banner-wrapper">
-            <a href="https://your-community-url.com" class="ad-banner active">
-                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/community.png" alt="Community">
-            </a>
-            <a href="https://line.me/ti/g2/your-link" class="ad-banner">
-                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/openchat.png" alt="OpenChat">
-            </a>
+            <a href="#" class="ad-banner active"><img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/community.png"></a>
+            <a href="#" class="ad-banner"><img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/openchat.png"></a>
         </div>
     </div>
 </div>
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    const LIFF_BASE_URL = "https://liff.line.me/2009771327-tpjaCzG9";
+    const LIFF_URL = "https://liff.line.me/2009771327-tpjaCzG9";
+    const LINE_OA_ID = "@534uoyka";
 
     function sendToOA(text) {
-        window.location.href = "https://line.me/R/oaMessage/@534uoyka/?" + encodeURIComponent(text);
+        window.location.href = `https://line.me/R/oaMessage/${LINE_OA_ID}/?${encodeURIComponent(text)}`;
     }
 
-    function startAdSlideshow() {
-        const ads = document.querySelectorAll('.ad-banner');
-        let currentAd = 0;
-        if (ads.length <= 1) return;
-        setInterval(() => {
-            ads[currentAd].classList.remove('active');
-            currentAd = (currentAd + 1) % ads.length;
-            ads[currentAd].classList.add('active');
-        }, 3000);
+    function goToLiff(type) {
+        // 体組成入力ページなど、LIFF経由で飛ばす用
+        window.location.href = LIFF_URL; 
     }
 
     window.onload = async function() {
-        startAdSlideshow();
         const params = new URLSearchParams(window.location.search);
-        const currentItem = params.get('item'); 
-        if (!currentItem) {
-            document.getElementById('loader').innerText = "IDエラー";
-            return;
-        }
+        const currentItem = params.get('item') || "lg-vw7k7t"; 
         document.getElementById('display-id').innerText = currentItem;
 
         try {
@@ -129,7 +128,6 @@
             buttons.forEach((btn, index) => {
                 const el = document.getElementById(`slot-${index}`);
                 if (el) {
-                    el.classList.add('active');
                     const labelEl = el.querySelector('.label');
                     if (btn.name && btn.name !== "未設定") {
                         labelEl.innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
@@ -138,13 +136,22 @@
                         el.style.opacity = "0.6";
                     }
                     el.onclick = () => {
-                        if (btn.id) window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`;
+                        window.location.href = `${LIFF_URL}?item=${btn.id}`;
                     };
                 }
             });
         } catch (e) { console.error(e); } finally {
             document.getElementById('loader').style.display = "none";
         }
+
+        // 簡易広告スライド
+        const ads = document.querySelectorAll('.ad-banner');
+        let currentAd = 0;
+        setInterval(() => {
+            ads[currentAd].classList.remove('active');
+            currentAd = (currentAd + 1) % ads.length;
+            ads[currentAd].classList.add('active');
+        }, 4000);
     };
 </script>
 </body>
