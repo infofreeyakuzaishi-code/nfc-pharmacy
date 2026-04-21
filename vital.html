@@ -13,12 +13,8 @@
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
-        
-        /* ボタンのデザイン */
         .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        
-        /* 送信後のボタン（案内用） */
-        .btn-submit:disabled { background: #a0aec0; color: #edf2f7; cursor: default; font-size: 14px; }
+        .btn-submit:disabled { background: #a0aec0; color: #edf2f7; cursor: default; }
         .close-guide { margin-top: 15px; font-size: 12px; color: #e53e3e; text-align: center; display: none; font-weight: bold; }
     </style>
 </head>
@@ -38,7 +34,7 @@
         <div class="input-group"><label>備考・運動報告</label><textarea id="exercise" rows="2"></textarea></div>
 
         <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
-        <div id="guide-msg" class="close-guide">▲ 記録を開始しました。この画面を閉じて、LINEに届く通知をご確認ください。</div>
+        <div id="guide-msg" class="close-guide">▲ 送信を受け付けました。この画面を閉じて、LINEの通知をお待ちください。</div>
     </div>
 
     <script>
@@ -50,36 +46,41 @@
             const btn = document.getElementById('submit-btn');
             const guide = document.getElementById('guide-msg');
 
-            // 1. ボタン表示の切り替え
             btn.disabled = true;
-            btn.innerText = "送信を開始しました";
-            guide.style.display = "block";
+            btn.innerText = "送信中...";
 
-            // 2. データの収集
-            const payload = {
-                type: "vital_record",
-                weight: document.getElementById('weight').value,
-                fat_pc: document.getElementById('fat_pc').value,
-                fat_kg: document.getElementById('fat_kg').value,
-                muscle: document.getElementById('muscle').value,
-                steps: document.getElementById('steps').value,
-                libre: document.getElementById('libre').value,
-                exercise: document.getElementById('exercise').value
-            };
+            // LINEプロフィールを取得してから送信
+            liff.getProfile().then(profile => {
+                const payload = {
+                    type: "vital_record",
+                    userId: profile.userId,
+                    displayName: profile.displayName, // ここでお名前をセット
+                    weight: document.getElementById('weight').value,
+                    fat_pc: document.getElementById('fat_pc').value,
+                    fat_kg: document.getElementById('fat_kg').value,
+                    muscle: document.getElementById('muscle').value,
+                    steps: document.getElementById('steps').value,
+                    libre: document.getElementById('libre').value,
+                    exercise: document.getElementById('exercise').value
+                };
 
-            // 3. fetchで送信（投げっぱなし・待ち時間を設けない）
-            fetch(GAS_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify(payload)
-            });
+                fetch(GAS_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify(payload)
+                });
 
-            // 4. 数秒後にさらに案内を強める（念押し）
-            setTimeout(() => {
                 btn.innerText = "完了：画面を閉じてください ✖";
-                // 自動で閉じれる環境なら閉じる
-                liff.closeWindow();
-            }, 1500);
+                guide.style.display = "block";
+                
+                // 数秒後に自動クローズ試行
+                setTimeout(() => { liff.closeWindow(); }, 2000);
+
+            }).catch(err => {
+                alert("プロフィール取得に失敗しました。画面を一度開き直してください。");
+                btn.disabled = false;
+                btn.innerText = "再試行";
+            });
         }
     </script>
 </body>
