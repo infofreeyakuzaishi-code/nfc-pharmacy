@@ -7,14 +7,14 @@
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; }
-        .form-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .form-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 20px; }
         h3 { border-left: 4px solid #764ba2; padding-left: 10px; font-size: 16px; margin: 20px 0 10px; color: #4a5568; }
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .calc-hint { font-size: 10px; color: #718096; margin-top: 2px; }
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; }
+        .btn-submit:disabled { background: #cbd5e0; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -22,52 +22,30 @@
         <h2>📊 身体データ入力</h2>
         
         <h3>【体組成】</h3>
+        <div class="input-group"><label>体重 (kg)</label><input type="number" id="weight" step="0.1"></div>
+        <div class="input-group"><label>体脂肪率 (%)</label><input type="number" id="fat_pc" step="0.1"></div>
+        <div class="input-group"><label>体脂肪量 (kg)</label><input type="number" id="fat_kg" step="0.1"></div>
+        <div class="input-group"><label>筋肉量 (kg)</label><input type="number" id="muscle" step="0.1"></div>
         <div class="input-group">
-            <label>体重 (kg)</label>
-            <input type="number" id="weight" step="0.1" oninput="calcBC()">
-        </div>
-        <div class="input-group">
-            <label>体脂肪率 (%)</label>
-            <input type="number" id="fat_pc" step="0.1" oninput="calcBC()">
-        </div>
-        <div class="input-group">
-            <label>体脂肪量 (kg)</label>
-            <input type="number" id="fat_kg" step="0.1" oninput="calcBC()">
-            <div class="calc-hint">※体重と率から自動計算します</div>
-        </div>
-        <div class="input-group">
-            <label>筋肉量 (kg)</label>
-            <input type="number" id="muscle" step="0.1">
-        </div>
-        <div class="input-group">
-            <label>水分率 (%) / 量(kg)</label>
+            <label>水分率(%) / 量(kg)</label>
             <div style="display:flex; gap:5px;">
-                <input type="number" id="water_pc" step="0.1" placeholder="%" oninput="calcWater()">
-                <input type="number" id="water_kg" step="0.1" placeholder="kg" oninput="calcWater()">
+                <input type="number" id="water_pc" step="0.1" placeholder="%">
+                <input type="number" id="water_kg" step="0.1" placeholder="kg">
             </div>
         </div>
         <div class="input-group">
-            <label>たんぱく率 (%) / 量(kg)</label>
+            <label>たんぱく率(%) / 量(kg)</label>
             <div style="display:flex; gap:5px;">
-                <input type="number" id="protein_pc" step="0.1" placeholder="%" oninput="calcProtein()">
-                <input type="number" id="protein_kg" step="0.1" placeholder="kg" oninput="calcProtein()">
+                <input type="number" id="protein_pc" step="0.1" placeholder="%">
+                <input type="number" id="protein_kg" step="0.1" placeholder="kg">
             </div>
         </div>
 
         <h3>【身体データ】</h3>
-        <div class="input-group">
-            <label>歩数</label>
-            <input type="number" id="steps">
-        </div>
-        <div class="input-group">
-            <label>リブレ数値</label>
-            <input type="number" id="libre">
-        </div>
-        <div class="input-group">
-            <label>血液検査値 / 運動報告</label>
-            <textarea id="blood" placeholder="血液検査値など" rows="2" style="margin-bottom:8px;"></textarea>
-            <textarea id="exercise" placeholder="今日の運動内容" rows="2"></textarea>
-        </div>
+        <div class="input-group"><label>歩数</label><input type="number" id="steps"></div>
+        <div class="input-group"><label>リブレ数値</label><input type="number" id="libre"></div>
+        <div class="input-group"><label>血液検査値</label><textarea id="blood" rows="2"></textarea></div>
+        <div class="input-group"><label>運動報告 (コメント)</label><textarea id="exercise" rows="2"></textarea></div>
 
         <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
     </div>
@@ -75,51 +53,49 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-        function calcBC() {
-            const w = parseFloat(document.getElementById('weight').value);
-            const p = parseFloat(document.getElementById('fat_pc').value);
-            const k = parseFloat(document.getElementById('fat_kg').value);
-            if (w && p && !k) document.getElementById('fat_kg').value = (w * (p / 100)).toFixed(2);
-            if (w && k && !p) document.getElementById('fat_pc').value = ((k / w) * 100).toFixed(1);
-        }
-        function calcWater() {
-            const w = parseFloat(document.getElementById('weight').value);
-            const p = parseFloat(document.getElementById('water_pc').value);
-            if (w && p) document.getElementById('water_kg').value = (w * (p / 100)).toFixed(2);
-        }
-        function calcProtein() {
-            const w = parseFloat(document.getElementById('weight').value);
-            const p = parseFloat(document.getElementById('protein_pc').value);
-            if (w && p) document.getElementById('protein_kg').value = (w * (p / 100)).toFixed(2);
-        }
-
         async function submitData() {
-            document.getElementById('submit-btn').disabled = true;
-            document.getElementById('submit-btn').innerText = "送信中...";
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerText = "送信中...";
             
-            await liff.init({ liffId: "2009771327-tpjaCzG9" });
-            const profile = await liff.getProfile();
-            
-            const payload = {
-                type: "vital_record",
-                userId: profile.userId,
-                displayName: profile.displayName,
-                weight: document.getElementById('weight').value,
-                fat_pc: document.getElementById('fat_pc').value,
-                fat_kg: document.getElementById('fat_kg').value,
-                muscle: document.getElementById('muscle').value,
-                water_pc: document.getElementById('water_pc').value,
-                water_kg: document.getElementById('water_kg').value,
-                protein_pc: document.getElementById('protein_pc').value,
-                protein_kg: document.getElementById('protein_kg').value,
-                steps: document.getElementById('steps').value,
-                libre: document.getElementById('libre').value,
-                blood: document.getElementById('blood').value,
-                exercise: document.getElementById('exercise').value
-            };
+            try {
+                await liff.init({ liffId: "2009771327-tpjaCzG9" });
+                if (!liff.isLoggedIn()) { liff.login(); return; }
+                const profile = await liff.getProfile();
+                
+                const payload = {
+                    type: "vital_record",
+                    userId: profile.userId,
+                    displayName: profile.displayName,
+                    weight: document.getElementById('weight').value,
+                    fat_pc: document.getElementById('fat_pc').value,
+                    fat_kg: document.getElementById('fat_kg').value,
+                    muscle: document.getElementById('muscle').value,
+                    water_pc: document.getElementById('water_pc').value,
+                    water_kg: document.getElementById('water_kg').value,
+                    protein_pc: document.getElementById('protein_pc').value,
+                    protein_kg: document.getElementById('protein_kg').value,
+                    steps: document.getElementById('steps').value,
+                    libre: document.getElementById('libre').value,
+                    blood: document.getElementById('blood').value,
+                    exercise: document.getElementById('exercise').value
+                };
 
-            await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-            liff.closeWindow();
+                // 送信完了を待ってから次へ
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify(payload)
+                });
+
+                // 成功時はウィンドウを閉じる
+                liff.closeWindow();
+
+            } catch (e) {
+                alert("エラーが発生しました: " + e);
+                btn.disabled = false;
+                btn.innerText = "再試行する";
+            }
         }
     </script>
 </body>
