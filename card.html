@@ -25,130 +25,85 @@
         .stamp-grid { display: flex; justify-content: center; gap: 10px; }
         .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stamp-btn.visible { display: flex; }
-        .ad-container { padding: 5px 20px; text-align: center; }
-        .ad-banner-wrapper { position: relative; width: 100%; height: 70px; border-radius: 12px; overflow: hidden; background: #eee; }
-        .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: 0.8s; display: none; align-items: center; justify-content: center; text-decoration: none; }
-        .ad-banner.active { opacity: 1; display: flex; }
-        .status-panel { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); color: white; flex-direction: column; }
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
 </head>
 <body>
-
 <div class="card">
     <div id="loader">読み込み中...</div>
     <div class="header">
         <h1>ろぎてむ/Loggy/</h1>
         <p>ID: <span id="display-id">----</span></p>
     </div>
-
     <div class="guide-box">
         <strong>【ご利用ガイド】</strong>
         <ul>
-            <li><strong>新規登録：</strong> 空きボタンを押し、名前と回数を送信。</li>
+            <li><strong>登録・記録：</strong> ボタンをタップして操作してください。</li>
             <li><strong>設定変更：</strong> トーク画面で「設定確認」と送信。</li>
-            <li><strong>体調報告：</strong> 下の顔をタップ。継続で種類が変化！</li>
         </ul>
     </div>
-
     <div class="stamp-section">
         <div class="stamp-title"><span>体調報告</span> <span id="stamp-count-text">累計 0回</span></div>
         <div class="stamp-grid">
-            <button class="stamp-btn visible" onclick="sendToOA('😊')">😊</button>
-            <button class="stamp-btn visible" onclick="sendToOA('😑')">😑</button>
-            <button class="stamp-btn visible" onclick="sendToOA('😫')">😫</button>
-            <button id="st-fire" class="stamp-btn" onclick="sendToOA('🔥')">🔥</button>
-            <button id="st-crown" class="stamp-btn" onclick="sendToOA('👑')">👑</button>
+            <button class="stamp-btn visible" onclick="sendEmoji('😊')">😊</button>
+            <button class="stamp-btn visible" onclick="sendEmoji('😑')">😑</button>
+            <button class="stamp-btn visible" onclick="sendEmoji('😫')">😫</button>
+            <button id="st-fire" class="stamp-btn" onclick="sendEmoji('🔥')">🔥</button>
+            <button id="st-crown" class="stamp-btn" onclick="sendEmoji('👑')">👑</button>
         </div>
     </div>
-
     <div class="menu-grid" id="menu-grid">
         <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
         <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
         <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
         <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
     </div>
-
-    <div class="ad-container">
-        <div class="ad-banner-wrapper" id="ad-wrapper">
-            <div class="ad-banner status-panel active">
-                <div style="font-size: 10px;">現在の継続ランク</div>
-                <div style="font-size: 18px; font-weight: bold;" id="rank-name">ビギナー</div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
     const LIFF_ID = "2009771327-tpjaCzG9";
-    const LINE_OA = "https://line.me/R/oaMessage/@534uoyka/?";
 
-    function sendToOA(txt) { window.location.href = LINE_OA + encodeURIComponent(txt); }
-
-    // ★重要：パラメータを消さずにLIFFを開く関数
-    function openLiff(param) {
-        const url = `https://liff.line.me/${LIFF_ID}?item=${param}`;
-        if (liff.isInClient()) {
-            liff.openWindow({ url: url, external: false });
-        } else {
-            window.location.href = url;
-        }
+    function sendEmoji(emoji) {
+        window.location.href = "https://line.me/R/oaMessage/@534uoyka/?" + encodeURIComponent(emoji);
     }
 
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
-        const item = params.get('item');
-        if (!item) { document.getElementById('loader').innerText = "ID Error"; return; }
-        document.getElementById('display-id').innerText = item;
+        const parentId = params.get('item');
+        if (!parentId) { document.getElementById('loader').innerText = "ID Error"; return; }
+        document.getElementById('display-id').innerText = parentId;
 
-        let uid = "";
         try {
             await liff.init({ liffId: LIFF_ID });
-            if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                uid = profile.userId;
-            }
-        } catch (e) { console.error("LIFF Init Error", e); }
+            let uid = liff.isLoggedIn() ? (await liff.getProfile()).userId : "";
 
-        try {
-            const res = await fetch(`${GAS_URL}?type=getSettings&item=${item}&userId=${uid}`);
+            const res = await fetch(`${GAS_URL}?type=getSettings&item=${parentId}&userId=${uid}`);
             const data = await res.json();
             
-            const count = data.stamps || 0;
-            document.getElementById('stamp-count-text').innerText = `累計 ${count}回`;
-            if (count >= 3) document.getElementById('st-fire').classList.add('visible');
-            if (count >= 7) document.getElementById('st-crown').classList.add('visible');
-            document.getElementById('rank-name').innerText = count >= 7 ? "ゴールド" : count >= 3 ? "ブロンズ" : "ビギナー";
+            document.getElementById('stamp-count-text').innerText = `累計 ${data.stamps || 0}回`;
+            if (data.stamps >= 3) document.getElementById('st-fire').classList.add('visible');
+            if (data.stamps >= 7) document.getElementById('st-crown').classList.add('visible');
 
             data.buttons.forEach((btn, i) => {
                 const el = document.getElementById(`slot-${i}`);
-                if (el) {
-                    if (btn.name !== "未設定" && btn.id) {
+                if (el && btn.id) {
+                    if (btn.name !== "未設定") {
                         el.classList.add('active');
                         el.querySelector('.label').innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
-                        el.onclick = () => openLiff(btn.id);
                     } else {
                         el.querySelector('.label').innerText = "+新規登録";
                         el.style.opacity = "0.5";
-                        el.onclick = () => openLiff(`${item}_new${i}`);
                     }
+                    // A列のID（btn-xxx）をそのままリンクに使用
+                    el.onclick = () => {
+                        window.location.href = `https://liff.line.me/${LIFF_ID}?item=${btn.id}`;
+                    };
                 }
             });
-        } catch (e) { console.error("Fetch Error", e); }
-        finally { document.getElementById('loader').style.display = "none"; startAds(); }
+        } catch (e) { console.error(e); }
+        finally { document.getElementById('loader').style.display = "none"; }
     };
-
-    function startAds() {
-        const ads = document.querySelectorAll('.ad-banner');
-        let cur = 0;
-        if (ads.length < 2) return;
-        setInterval(() => {
-            ads[cur].classList.remove('active');
-            cur = (cur + 1) % ads.length;
-            ads[cur].classList.add('active');
-        }, 4000);
-    }
 </script>
 </body>
 </html>
