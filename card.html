@@ -20,11 +20,6 @@
         .icon { font-size: 28px; margin-bottom: 5px; }
         .label { font-size: 13px; font-weight: bold; color: #2d3748; }
         .sub-label { font-size: 9px; opacity: 0.7; display: block; margin-top: 2px; }
-        .stamp-section { padding: 0 20px 15px; text-align: center; }
-        .stamp-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .stamp-grid { display: flex; justify-content: center; gap: 10px; }
-        .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stamp-btn.visible { display: flex; }
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
 </head>
@@ -38,19 +33,9 @@
     <div class="guide-box">
         <strong>【ご利用ガイド】</strong>
         <ul>
-            <li><strong>登録・記録：</strong> ボタンをタップして操作してください。</li>
-            <li><strong>設定変更：</strong> トーク画面で「設定確認」と送信。</li>
+            <li>ボタンをタップして登録または記録を行います。</li>
+            <li>設定の確認はトーク画面で「設定確認」と送信してください。</li>
         </ul>
-    </div>
-    <div class="stamp-section">
-        <div class="stamp-title"><span>体調報告</span> <span id="stamp-count-text">累計 0回</span></div>
-        <div class="stamp-grid">
-            <button class="stamp-btn visible" onclick="sendEmoji('😊')">😊</button>
-            <button class="stamp-btn visible" onclick="sendEmoji('😑')">😑</button>
-            <button class="stamp-btn visible" onclick="sendEmoji('😫')">😫</button>
-            <button id="st-fire" class="stamp-btn" onclick="sendEmoji('🔥')">🔥</button>
-            <button id="st-crown" class="stamp-btn" onclick="sendEmoji('👑')">👑</button>
-        </div>
     </div>
     <div class="menu-grid" id="menu-grid">
         <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
@@ -64,10 +49,6 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
     const LIFF_ID = "2009771327-tpjaCzG9";
 
-    function sendEmoji(emoji) {
-        window.location.href = "https://line.me/R/oaMessage/@534uoyka/?" + encodeURIComponent(emoji);
-    }
-
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
         const parentId = params.get('item');
@@ -76,15 +57,9 @@
 
         try {
             await liff.init({ liffId: LIFF_ID });
-            let uid = liff.isLoggedIn() ? (await liff.getProfile()).userId : "";
-
-            const res = await fetch(`${GAS_URL}?type=getSettings&item=${parentId}&userId=${uid}`);
+            const res = await fetch(`${GAS_URL}?type=getSettings&item=${parentId}`);
             const data = await res.json();
             
-            document.getElementById('stamp-count-text').innerText = `累計 ${data.stamps || 0}回`;
-            if (data.stamps >= 3) document.getElementById('st-fire').classList.add('visible');
-            if (data.stamps >= 7) document.getElementById('st-crown').classList.add('visible');
-
             data.buttons.forEach((btn, i) => {
                 const el = document.getElementById(`slot-${i}`);
                 if (el && btn.id) {
@@ -95,7 +70,7 @@
                         el.querySelector('.label').innerText = "+新規登録";
                         el.style.opacity = "0.5";
                     }
-                    // A列のID（btn-xxx）をそのままリンクに使用
+                    // A列の子IDをそのままリンクに使用
                     el.onclick = () => {
                         window.location.href = `https://liff.line.me/${LIFF_ID}?item=${btn.id}`;
                     };
