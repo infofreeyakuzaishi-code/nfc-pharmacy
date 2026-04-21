@@ -1,84 +1,48 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ろぎてむ 管理カード</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; width: 95%; max-width: 420px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 10px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
-        .guide-box { background: #f8faff; margin: 15px 20px; padding: 15px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 12px; color: #4a5568; line-height: 1.6; }
-        .guide-box strong { color: #667eea; font-size: 13px; }
-        .guide-box ul { margin: 5px 0 0; padding-left: 18px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
-        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
-        .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
-        .icon { font-size: 28px; margin-bottom: 5px; }
-        .label { font-size: 13px; font-weight: bold; color: #2d3748; }
-        .sub-label { font-size: 9px; opacity: 0.7; display: block; margin-top: 2px; }
-        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
-    </style>
-</head>
-<body>
-<div class="card">
-    <div id="loader">読み込み中...</div>
-    <div class="header">
-        <h1>ろぎてむ/Loggy/</h1>
-        <p>ID: <span id="display-id">----</span></p>
-    </div>
-    <div class="guide-box">
-        <strong>【ご利用ガイド】</strong>
-        <ul>
-            <li>ボタンをタップして登録または記録を行います。</li>
-            <li>設定の確認はトーク画面で「設定確認」と送信してください。</li>
-        </ul>
-    </div>
-    <div class="menu-grid" id="menu-grid">
-        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-    </div>
-</div>
-
 <script>
+    // ★新しいGASのURLに更新してください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    const LIFF_ID = "2009771327-tpjaCzG9";
+    const LIFF_BASE_URL = "https://liff.line.me/2009771327-tpjaCzG9";
 
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
-        const parentId = params.get('item');
-        if (!parentId) { document.getElementById('loader').innerText = "ID Error"; return; }
-        document.getElementById('display-id').innerText = parentId;
+        // URLから親IDを取得（例: card.html?item=rg-card-8f2a）
+        const currentItem = params.get('item'); 
+        
+        if (!currentItem) {
+            document.getElementById('loader').innerText = "エラー: IDが見つかりません";
+            return;
+        }
+
+        document.getElementById('display-id').innerText = currentItem;
 
         try {
-            await liff.init({ liffId: LIFF_ID });
-            const res = await fetch(`${GAS_URL}?type=getSettings&item=${parentId}`);
-            const data = await res.json();
-            
-            data.buttons.forEach((btn, i) => {
-                const el = document.getElementById(`slot-${i}`);
-                if (el && btn.id) {
-                    if (btn.name !== "未設定") {
-                        el.classList.add('active');
-                        el.querySelector('.label').innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
+            // GASへ親IDを送信して、紐づく子IDと名前を取得
+            const response = await fetch(`${GAS_URL}?type=getSettings&item=${currentItem}`);
+            const buttons = await response.json();
+
+            buttons.forEach((btn, index) => {
+                const el = document.getElementById(`slot-${index}`);
+                if (el) {
+                    el.classList.add('active');
+                    const labelEl = el.querySelector('.label');
+                    
+                    if (btn.name && btn.name !== "未設定") {
+                        labelEl.innerHTML = `💊 ${btn.name}<span class="sub-label">飲んだらタップ</span>`;
                     } else {
-                        el.querySelector('.label').innerText = "+新規登録";
-                        el.style.opacity = "0.5";
+                        labelEl.innerText = "＋新規登録";
+                        el.style.opacity = "0.6";
                     }
-                    // A列の子IDをそのままリンクに使用
+
+                    // ランダムな子ID（btn-xxxxxx）を使ってLINEに飛ばす
                     el.onclick = () => {
-                        window.location.href = `https://liff.line.me/${LIFF_ID}?item=${btn.id}`;
+                        if (btn.id) window.location.href = `${LIFF_BASE_URL}?item=${btn.id}`;
                     };
                 }
             });
-        } catch (e) { console.error(e); }
-        finally { document.getElementById('loader').style.display = "none"; }
+        } catch (e) {
+            console.error("通信エラー:", e);
+        } finally {
+            document.getElementById('loader').style.display = "none";
+        }
     };
 </script>
-</body>
-</html>
