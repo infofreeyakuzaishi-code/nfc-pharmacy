@@ -10,46 +10,86 @@
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
-        .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
         
-        /* 追加：スタンプ・体組成セクション */
-      <style>
-    /* ...既存スタイル... */
-    .stamp-section { padding: 0 20px 15px; text-align: center; border-bottom: 1px solid #edf2f7; margin-bottom: 15px; }
-    .section-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .stamp-grid { display: flex; justify-content: space-around; gap: 5px; margin-bottom: 10px; }
-    .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 5px; min-width: 45px; cursor: pointer; font-size: 22px; transition: 0.2s; }
-    .vital-full-btn { width: 100%; background: #f8faff; border: 1px solid #667eea; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: bold; color: #667eea; cursor: pointer; margin-top: 5px; }
-</style>
+        .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
 
-<div class="stamp-section">
-    <div class="section-title"><span>今日の体調</span></div>
-    <div class="stamp-grid">
-        <button class="stamp-btn" onclick="sendToOA('😊 体調良好')">😊</button>
-        <button class="stamp-btn" onclick="sendToOA('😑 ふつう')">😑</button>
-        <button class="stamp-btn" onclick="sendToOA('😫 つらい')">😫</button>
-        <button class="stamp-btn" onclick="sendToOA('🤒 風邪気味')">🤒</button>
+        /* 体調スタンプ・追加UI */
+        .stamp-section { padding: 0 20px 15px; text-align: center; border-bottom: 1px solid #edf2f7; margin-bottom: 15px; }
+        .section-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .stamp-grid { display: flex; justify-content: space-around; gap: 5px; margin-bottom: 10px; }
+        .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 5px; min-width: 45px; cursor: pointer; font-size: 22px; transition: 0.2s; }
+        .vital-full-btn { width: 100%; background: #f8faff; border: 1px solid #667eea; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: bold; color: #667eea; cursor: pointer; margin-top: 5px; }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
+        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
+        .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
+        .icon { font-size: 32px; margin-bottom: 8px; }
+        .label { font-size: 14px; font-weight: bold; color: #2d3748; line-height: 1.4; }
+        .sub-label { font-size: 10px; font-weight: normal; opacity: 0.7; display: block; margin-top: 4px; }
+
+        .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn-rx { background-color: #48bb78; color: white; }
+        .btn-chat { background-color: #4a5568; color: white; }
+
+        .ad-container { padding: 10px 20px 10px; text-align: center; position: relative; }
+        .ad-tag { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 4px; padding-right: 5px; }
+        .ad-banner-wrapper { position: relative; width: 100%; height: 80px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; display: none; }
+        .ad-banner.active { opacity: 1; display: block; }
+        .ad-banner img { width: 100%; height: 100%; object-fit: cover; }
+        
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="loader">読み込み中...</div>
+    
+    <div class="header">
+        <h1>ろぎてむ/Loggy-System/</h1>
+        <p>カードID: <span id="display-id">----</span></p>
     </div>
-    <button class="vital-full-btn" onclick="window.location.href='vital.html'">⚖️ 体組成・身体データを入力する</button>
-</div>
 
-<script>
-    // 追加関数
-    function sendToOA(text) {
-        window.location.href = "https://line.me/R/oaMessage/@534uoyka/?" + encodeURIComponent(text);
-    }
-    // ...あとの既存スクリプトは一切変更なし...
-</script>
+    <div class="guide-box">
+        💊 <strong>記録：</strong>新規登録後は飲んだらボタンをタップしてください。<br>
+        📝 <strong>設定：</strong>LINEメニューから設定を確認できます。
+    </div>
+
+    <div class="stamp-section">
+        <div class="section-title"><span>今日の体調</span></div>
+        <div class="stamp-grid">
+            <button class="stamp-btn" onclick="sendToOA('😊 体調良好')">😊</button>
+            <button class="stamp-btn" onclick="sendToOA('😑 ふつう')">😑</button>
+            <button class="stamp-btn" onclick="sendToOA('😫 つらい')">😫</button>
+            <button class="stamp-btn" onclick="sendToOA('🤒 風邪気気味')">🤒</button>
+        </div>
+        <button class="vital-full-btn" onclick="window.location.href='vital.html'">⚖️ 体組成・身体データを入力する</button>
+    </div>
+
     <div class="menu-grid">
-        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
-        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
+        <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
+        <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">読み込み中</div></div>
     </div>
 
     <div class="action-area">
-        <button class="btn-action btn-rx" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?処方箋の画像を写真で送ってください'"><span>📸</span><span>処方箋送信</span></button>
-        <button class="btn-action btn-chat" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?相談内容を入力して送信してください'"><span>💬</span><span>薬剤師相談</span></button>
+        <button class="btn-action btn-rx" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?処方箋の画像を写真で送ってください'"><span>📸</span><span>処方箋を送信</span></button>
+        <button class="btn-action btn-chat" onclick="window.location.href='https://line.me/R/oaMessage/@534uoyka/?相談内容を入力してください'"><span>💬</span><span>薬剤師に相談</span></button>
+    </div>
+
+    <div class="ad-container">
+        <div class="ad-tag">INFORMATION</div>
+        <div class="ad-banner-wrapper">
+            <a href="https://your-community-url.com" class="ad-banner active">
+                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/community.png" alt="Community">
+            </a>
+            <a href="https://line.me/ti/g2/your-link" class="ad-banner">
+                <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/openchat.png" alt="OpenChat">
+            </a>
+        </div>
     </div>
 </div>
 
@@ -61,10 +101,25 @@
         window.location.href = "https://line.me/R/oaMessage/@534uoyka/?" + encodeURIComponent(text);
     }
 
+    function startAdSlideshow() {
+        const ads = document.querySelectorAll('.ad-banner');
+        let currentAd = 0;
+        if (ads.length <= 1) return;
+        setInterval(() => {
+            ads[currentAd].classList.remove('active');
+            currentAd = (currentAd + 1) % ads.length;
+            ads[currentAd].classList.add('active');
+        }, 3000);
+    }
+
     window.onload = async function() {
+        startAdSlideshow();
         const params = new URLSearchParams(window.location.search);
         const currentItem = params.get('item'); 
-        if (!currentItem) { document.getElementById('loader').innerText = "ID Error"; return; }
+        if (!currentItem) {
+            document.getElementById('loader').innerText = "IDエラー";
+            return;
+        }
         document.getElementById('display-id').innerText = currentItem;
 
         try {
@@ -87,8 +142,9 @@
                     };
                 }
             });
-        } catch (e) { console.error(e); }
-        finally { document.getElementById('loader').style.display = "none"; }
+        } catch (e) { console.error(e); } finally {
+            document.getElementById('loader').style.display = "none";
+        }
     };
 </script>
 </body>
