@@ -6,95 +6,47 @@
     <title>身体データ入力</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
+        /* デザインはそのまま維持 */
         body { font-family: sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; }
         .form-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 20px; }
         h3 { border-left: 4px solid #764ba2; padding-left: 10px; font-size: 16px; margin: 20px 0 10px; color: #4a5568; }
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; }
-        .btn-submit:disabled { background: #cbd5e0; }
     </style>
 </head>
 <body>
     <div class="form-card">
         <h2>📊 身体データ入力</h2>
-        
-        <h3>【体組成】</h3>
         <div class="input-group"><label>体重 (kg)</label><input type="number" id="weight" step="0.1"></div>
         <div class="input-group"><label>体脂肪率 (%)</label><input type="number" id="fat_pc" step="0.1"></div>
-        <div class="input-group"><label>体脂肪量 (kg)</label><input type="number" id="fat_kg" step="0.1"></div>
-        <div class="input-group"><label>筋肉量 (kg)</label><input type="number" id="muscle" step="0.1"></div>
-        <div class="input-group">
-            <label>水分率(%) / 量(kg)</label>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="water_pc" step="0.1" placeholder="%">
-                <input type="number" id="water_kg" step="0.1" placeholder="kg">
-            </div>
-        </div>
-        <div class="input-group">
-            <label>たんぱく率(%) / 量(kg)</label>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="protein_pc" step="0.1" placeholder="%">
-                <input type="number" id="protein_kg" step="0.1" placeholder="kg">
-            </div>
-        </div>
-
-        <h3>【身体データ】</h3>
         <div class="input-group"><label>歩数</label><input type="number" id="steps"></div>
-        <div class="input-group"><label>リブレ数値</label><input type="number" id="libre"></div>
-        <div class="input-group"><label>血液検査値</label><textarea id="blood" rows="2"></textarea></div>
-        <div class="input-group"><label>運動報告 (コメント)</label><textarea id="exercise" rows="2"></textarea></div>
-
-        <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
+        <div class="input-group"><label>備考・運動報告</label><textarea id="exercise" rows="2"></textarea></div>
+        <button class="btn-submit" id="submit-btn" onclick="submitViaMessage()">データを記録する</button>
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+        liff.init({ liffId: "2009771327-tpjaCzG9" });
 
-        // 初期化
-        liff.init({ liffId: "2009771327-tpjaCzG9" }).catch(err => console.error(err));
+        function submitViaMessage() {
+            const w = document.getElementById('weight').value;
+            const f = document.getElementById('fat_pc').value;
+            const s = document.getElementById('steps').value;
+            const e = document.getElementById('exercise').value;
 
-        function submitData() {
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerText = "送信中...";
+            // 送信用テキストの組み立て（GAS側で判別するためのキーワードを付ける）
+            const msg = `【身体記録】\n体重:${w}\n体脂肪:${f}\n歩数:${s}\n備考:${e}`;
 
-            // プロフィール取得
-            liff.getProfile().then(profile => {
-                const payload = {
-                    type: "vital_record",
-                    userId: profile.userId,
-                    displayName: profile.displayName,
-                    weight: document.getElementById('weight').value,
-                    fat_pc: document.getElementById('fat_pc').value,
-                    fat_kg: document.getElementById('fat_kg').value,
-                    muscle: document.getElementById('muscle').value,
-                    water_pc: document.getElementById('water_pc').value,
-                    water_kg: document.getElementById('water_kg').value,
-                    protein_pc: document.getElementById('protein_pc').value,
-                    protein_kg: document.getElementById('protein_kg').value,
-                    steps: document.getElementById('steps').value,
-                    libre: document.getElementById('libre').value,
-                    blood: document.getElementById('blood').value,
-                    exercise: document.getElementById('exercise').value
-                };
-
-                // GASへ送信（投げっぱなし）
-                fetch(GAS_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify(payload)
-                });
-
-                // 通信開始を待たずに閉じる
-                liff.closeWindow();
-
-            }).catch(err => {
-                alert("プロフィール取得エラー: " + err);
-                btn.disabled = false;
-                btn.innerText = "再試行";
+            // トーク画面にメッセージを投稿して閉じる
+            liff.sendMessages([{
+                type: 'text',
+                text: msg
+            }]).then(() => {
+                liff.closeWindow(); // メッセージ送信直後に確実に閉じる
+            }).catch((err) => {
+                alert('エラー: ' + err);
             });
         }
     </script>
