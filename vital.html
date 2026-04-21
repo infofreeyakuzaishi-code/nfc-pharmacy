@@ -13,9 +13,8 @@
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
         input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        .btn-submit:disabled { background: #a0aec0; color: #edf2f7; cursor: default; }
-        .close-guide { margin-top: 15px; font-size: 12px; color: #e53e3e; text-align: center; display: none; font-weight: bold; }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 16px; cursor: pointer; }
+        .btn-submit:disabled { background: #a0aec0; color: #edf2f7; }
     </style>
 </head>
 <body>
@@ -34,27 +33,33 @@
         <div class="input-group"><label>備考・運動報告</label><textarea id="exercise" rows="2"></textarea></div>
 
         <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
-        <div id="guide-msg" class="close-guide">▲ 送信を受け付けました。この画面を閉じて、LINEの通知をお待ちください。</div>
     </div>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-        liff.init({ liffId: "2009771327-tpjaCzG9" });
+        // ページ読み込み時に初期化を完了させる
+        window.onload = function() {
+            liff.init({ liffId: "2009771327-tpjaCzG9" }).then(() => {
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            });
+        };
 
-        function submitData() {
+        async function submitData() {
             const btn = document.getElementById('submit-btn');
-            const guide = document.getElementById('guide-msg');
-
             btn.disabled = true;
             btn.innerText = "送信中...";
 
-            // LINEプロフィールを取得してから送信
-            liff.getProfile().then(profile => {
+            try {
+                // 名前を確実に取得
+                const profile = await liff.getProfile();
+                
                 const payload = {
                     type: "vital_record",
                     userId: profile.userId,
-                    displayName: profile.displayName, // ここでお名前をセット
+                    displayName: profile.displayName,
                     weight: document.getElementById('weight').value,
                     fat_pc: document.getElementById('fat_pc').value,
                     fat_kg: document.getElementById('fat_kg').value,
@@ -64,23 +69,25 @@
                     exercise: document.getElementById('exercise').value
                 };
 
+                // 送信（no-corsなのでレスポンスは待たない）
                 fetch(GAS_URL, {
                     method: "POST",
                     mode: "no-cors",
                     body: JSON.stringify(payload)
                 });
 
-                btn.innerText = "完了：画面を閉じてください ✖";
-                guide.style.display = "block";
+                // 送信直後にボタンの文字を変える（安心感のため）
+                btn.innerText = "送信完了（画面を閉じてください）";
                 
-                // 数秒後に自動クローズ試行
-                setTimeout(() => { liff.closeWindow(); }, 2000);
+                // 閉じれる環境なら閉じる
+                setTimeout(() => { liff.closeWindow(); }, 1000);
 
-            }).catch(err => {
-                alert("プロフィール取得に失敗しました。画面を一度開き直してください。");
+            } catch (err) {
+                console.error(err);
+                alert("データの取得に失敗しました。LINEから開き直してください。");
                 btn.disabled = false;
                 btn.innerText = "再試行";
-            });
+            }
         }
     </script>
 </body>
