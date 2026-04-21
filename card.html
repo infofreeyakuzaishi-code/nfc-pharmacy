@@ -13,50 +13,33 @@
         .guide-box { background: #f8faff; margin: 15px 20px; padding: 12px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.5; }
         
         /* 追加：スタンプ・体組成セクション */
-        .stamp-section { padding: 0 20px 15px; text-align: center; border-bottom: 1px solid #edf2f7; margin-bottom: 10px; }
-        .section-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .stamp-grid { display: flex; justify-content: space-around; gap: 5px; margin-bottom: 12px; }
-        .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 5px; min-width: 45px; cursor: pointer; font-size: 22px; transition: 0.2s; }
-        .vital-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .vital-btn { background: #f8faff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; font-size: 10px; font-weight: bold; color: #4a5568; cursor: pointer; }
+      <style>
+    /* ...既存スタイル... */
+    .stamp-section { padding: 0 20px 15px; text-align: center; border-bottom: 1px solid #edf2f7; margin-bottom: 15px; }
+    .section-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .stamp-grid { display: flex; justify-content: space-around; gap: 5px; margin-bottom: 10px; }
+    .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 5px; min-width: 45px; cursor: pointer; font-size: 22px; transition: 0.2s; }
+    .vital-full-btn { width: 100%; background: #f8faff; border: 1px solid #667eea; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: bold; color: #667eea; cursor: pointer; margin-top: 5px; }
+</style>
 
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px 20px 20px; }
-        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
-        .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
-        .icon { font-size: 32px; margin-bottom: 8px; }
-        .label { font-size: 14px; font-weight: bold; color: #2d3748; line-height: 1.4; }
-        .sub-label { font-size: 10px; font-weight: normal; opacity: 0.7; display: block; margin-top: 4px; }
-        .action-area { padding: 0 20px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 10px; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 12px; }
-        .btn-rx { background-color: #48bb78; color: white; }
-        .btn-chat { background-color: #4a5568; color: white; }
-        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <div id="loader">読み込み中...</div>
-    <div class="header">
-        <h1>ろぎてむ/Loggy/</h1>
-        <p>カードID: <span id="display-id">----</span></p>
+<div class="stamp-section">
+    <div class="section-title"><span>今日の体調</span></div>
+    <div class="stamp-grid">
+        <button class="stamp-btn" onclick="sendToOA('😊 体調良好')">😊</button>
+        <button class="stamp-btn" onclick="sendToOA('😑 ふつう')">😑</button>
+        <button class="stamp-btn" onclick="sendToOA('😫 つらい')">😫</button>
+        <button class="stamp-btn" onclick="sendToOA('🤒 風邪気味')">🤒</button>
     </div>
-
-    <div class="guide-box">
-        💊 飲んだあとにボタンをタップして記録
-    </div>
-
-    <div class="stamp-section">
-        <div class="section-title"><span>今日の体調報告</span></div>
-        <div class="stamp-grid">
-            <button class="stamp-btn" onclick="sendToOA('😊 体調良好')">😊</button>
-            <button class="stamp-btn" onclick="sendToOA('😑 ふつう')">😑</button>
-            <button class="stamp-btn" onclick="sendToOA('😫 つらい')">😫</button>
-            <button class="stamp-btn" onclick="sendToOA('🤒 風邪気味')">🤒</button>
-     <div class="vital-grid">
-    <button class="vital-btn" onclick="window.location.href='vital.html'" style="grid-column: span 3;">⚖️ 身体データを入力</button>
+    <button class="vital-full-btn" onclick="window.location.href='vital.html'">⚖️ 体組成・身体データを入力する</button>
 </div>
 
+<script>
+    // 追加関数
+    function sendToOA(text) {
+        window.location.href = "https://line.me/R/oaMessage/@534uoyka/?" + encodeURIComponent(text);
+    }
+    // ...あとの既存スクリプトは一切変更なし...
+</script>
     <div class="menu-grid">
         <div id="slot-0" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
         <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">---</div></div>
