@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身体データ入力</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; }
+        .form-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 20px; }
+        h3 { border-left: 4px solid #764ba2; padding-left: 10px; font-size: 16px; margin: 20px 0 10px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .calc-hint { font-size: 10px; color: #718096; margin-top: 2px; }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+        <h2>📊 身体データ入力</h2>
+        
+        <h3>【体組成】</h3>
+        <div class="input-group">
+            <label>体重 (kg)</label>
+            <input type="number" id="weight" step="0.1" oninput="calcBodyComposition()">
+        </div>
+        <div class="input-group">
+            <label>体脂肪率 (%)</label>
+            <input type="number" id="fat_pc" step="0.1" oninput="calcBodyComposition()">
+        </div>
+        <div class="input-group">
+            <label>体脂肪量 (kg)</label>
+            <input type="number" id="fat_kg" step="0.1" oninput="calcBodyComposition()">
+            <div class="calc-hint">※体重と率から自動計算可</div>
+        </div>
+        <div class="input-group">
+            <label>筋肉量 (kg)</label>
+            <input type="number" id="muscle" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>水分率 (%)</label>
+            <input type="number" id="water_pc" step="0.1" oninput="calcWater()">
+        </div>
+        <div class="input-group">
+            <label>水分量 (kg)</label>
+            <input type="number" id="water_kg" step="0.1" oninput="calcWater()">
+        </div>
+        <div class="input-group">
+            <label>たんぱく質率 (%)</label>
+            <input type="number" id="protein_pc" step="0.1" oninput="calcProtein()">
+        </div>
+        <div class="input-group">
+            <label>たんぱく質量 (kg)</label>
+            <input type="number" id="protein_kg" step="0.1" oninput="calcProtein()">
+        </div>
+
+        <h3>【身体データ】</h3>
+        <div class="input-group">
+            <label>歩数</label>
+            <input type="number" id="steps">
+        </div>
+        <div class="input-group">
+            <label>リブレ数値</label>
+            <input type="number" id="libre">
+        </div>
+        <div class="input-group">
+            <label>血液検査値 (自由入力)</label>
+            <textarea id="blood_test" rows="2"></textarea>
+        </div>
+        <div class="input-group">
+            <label>運動報告 (コメント)</label>
+            <textarea id="exercise" rows="2"></textarea>
+        </div>
+
+        <button class="btn-submit" onclick="submitData()">データを記録する</button>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+
+        // 自動計算ロジック
+        function calcBodyComposition() {
+            const w = parseFloat(document.getElementById('weight').value);
+            const f_pc = parseFloat(document.getElementById('fat_pc').value);
+            const f_kg = parseFloat(document.getElementById('fat_kg').value);
+
+            if (w && f_pc && !f_kg) document.getElementById('fat_kg').value = (w * (f_pc / 100)).toFixed(2);
+            if (w && f_kg && !f_pc) document.getElementById('fat_pc').value = ((f_kg / w) * 100).toFixed(1);
+        }
+
+        function calcWater() {
+            const w = parseFloat(document.getElementById('weight').value);
+            const pc = parseFloat(document.getElementById('water_pc').value);
+            const kg = parseFloat(document.getElementById('water_kg').value);
+            if (w && pc && !kg) document.getElementById('water_kg').value = (w * (pc / 100)).toFixed(2);
+        }
+
+        function calcProtein() {
+            const w = parseFloat(document.getElementById('weight').value);
+            const pc = parseFloat(document.getElementById('protein_pc').value);
+            const kg = parseFloat(document.getElementById('protein_kg').value);
+            if (w && pc && !kg) document.getElementById('protein_kg').value = (w * (pc / 100)).toFixed(2);
+        }
+
+        async function submitData() {
+            await liff.init({ liffId: "2009771327-tpjaCzG9" });
+            const profile = await liff.getProfile();
+            
+            const data = {
+                type: "vital_record",
+                userId: profile.userId,
+                displayName: profile.displayName,
+                weight: document.getElementById('weight').value,
+                fat_pc: document.getElementById('fat_pc').value,
+                fat_kg: document.getElementById('fat_kg').value,
+                muscle: document.getElementById('muscle').value,
+                water_pc: document.getElementById('water_pc').value,
+                water_kg: document.getElementById('water_kg').value,
+                protein_pc: document.getElementById('protein_pc').value,
+                protein_kg: document.getElementById('protein_kg').value,
+                steps: document.getElementById('steps').value,
+                libre: document.getElementById('libre').value,
+                blood: document.getElementById('blood_test').value,
+                exercise: document.getElementById('exercise').value
+            };
+
+            await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(data) });
+            liff.closeWindow();
+        }
+    </script>
+</body>
+</html>
