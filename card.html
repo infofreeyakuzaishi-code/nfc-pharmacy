@@ -11,30 +11,25 @@
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
-        
         .guide-box { background: #f8faff; margin: 15px 20px; padding: 15px; border-radius: 12px; border-left: 4px solid #667eea; font-size: 12px; color: #4a5568; line-height: 1.6; }
         .guide-box strong { color: #667eea; font-size: 13px; }
         .guide-box ul { margin: 5px 0 0; padding-left: 18px; }
-
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
         .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 18px; padding: 15px 10px; text-align: center; transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
         .menu-item.active { border-color: #667eea; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
         .icon { font-size: 28px; margin-bottom: 5px; }
         .label { font-size: 13px; font-weight: bold; color: #2d3748; }
         .sub-label { font-size: 9px; opacity: 0.7; display: block; margin-top: 2px; }
-
         .stamp-section { padding: 0 20px 15px; text-align: center; }
         .stamp-title { font-size: 11px; font-weight: bold; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .stamp-grid { display: flex; justify-content: center; gap: 10px; }
         .stamp-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stamp-btn.visible { display: flex; }
-
         .ad-container { padding: 5px 20px; text-align: center; }
         .ad-banner-wrapper { position: relative; width: 100%; height: 70px; border-radius: 12px; overflow: hidden; background: #eee; }
         .ad-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: 0.8s; display: none; align-items: center; justify-content: center; text-decoration: none; }
         .ad-banner.active { opacity: 1; display: flex; }
         .status-panel { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); color: white; flex-direction: column; }
-
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; }
     </style>
 </head>
@@ -80,9 +75,6 @@
                 <div style="font-size: 10px;">現在の継続ランク</div>
                 <div style="font-size: 18px; font-weight: bold;" id="rank-name">ビギナー</div>
             </div>
-            <div class="ad-banner status-panel">
-                <div style="font-size: 12px;">体調はいかがですか？</div>
-            </div>
         </div>
     </div>
 </div>
@@ -93,6 +85,16 @@
     const LINE_OA = "https://line.me/R/oaMessage/@534uoyka/?";
 
     function sendToOA(txt) { window.location.href = LINE_OA + encodeURIComponent(txt); }
+
+    // ★重要：パラメータを消さずにLIFFを開く関数
+    function openLiff(param) {
+        const url = `https://liff.line.me/${LIFF_ID}?item=${param}`;
+        if (liff.isInClient()) {
+            liff.openWindow({ url: url, external: false });
+        } else {
+            window.location.href = url;
+        }
+    }
 
     window.onload = async function() {
         const params = new URLSearchParams(window.location.search);
@@ -107,41 +109,33 @@
                 const profile = await liff.getProfile();
                 uid = profile.userId;
             }
-        } catch (e) { console.error("LIFF初期化エラー:", e); }
+        } catch (e) { console.error("LIFF Init Error", e); }
 
         try {
-            // userIdを含めてGASからボタン設定を取得
             const res = await fetch(`${GAS_URL}?type=getSettings&item=${item}&userId=${uid}`);
             const data = await res.json();
             
-            // スタンプ表示制御
             const count = data.stamps || 0;
             document.getElementById('stamp-count-text').innerText = `累計 ${count}回`;
             if (count >= 3) document.getElementById('st-fire').classList.add('visible');
             if (count >= 7) document.getElementById('st-crown').classList.add('visible');
-            const rank = count >= 7 ? "ゴールド" : count >= 3 ? "ブロンズ" : "ビギナー";
-            document.getElementById('rank-name').innerText = rank;
+            document.getElementById('rank-name').innerText = count >= 7 ? "ゴールド" : count >= 3 ? "ブロンズ" : "ビギナー";
 
-            // ボタン割り当ての修正：LIFF URLに ?item= を確実に付与
             data.buttons.forEach((btn, i) => {
                 const el = document.getElementById(`slot-${i}`);
                 if (el) {
                     if (btn.name !== "未設定" && btn.id) {
                         el.classList.add('active');
                         el.querySelector('.label').innerHTML = `${btn.name}<span class="sub-label">飲んだらタップ</span>`;
-                        // 正しいリンク生成：https://liff.line.me/ID?item=btn-xxx
-                        const targetUrl = `https://liff.line.me/${LIFF_ID}?item=${btn.id}`;
-                        el.onclick = () => { window.location.href = targetUrl; };
+                        el.onclick = () => openLiff(btn.id);
                     } else {
                         el.querySelector('.label').innerText = "+新規登録";
                         el.style.opacity = "0.5";
-                        // 正しいリンク生成：https://liff.line.me/ID?item=card-xxx_new0
-                        const registerUrl = `https://liff.line.me/${LIFF_ID}?item=${item}_new${i}`;
-                        el.onclick = () => { window.location.href = registerUrl; };
+                        el.onclick = () => openLiff(`${item}_new${i}`);
                     }
                 }
             });
-        } catch (e) { console.error("データ取得エラー:", e); }
+        } catch (e) { console.error("Fetch Error", e); }
         finally { document.getElementById('loader').style.display = "none"; startAds(); }
     };
 
