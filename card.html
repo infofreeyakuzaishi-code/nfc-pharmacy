@@ -21,10 +21,15 @@
 
         .section-title { font-size: 11px; font-weight: bold; color: #a0aec0; margin: 25px 20px 10px; text-transform: uppercase; letter-spacing: 1px; }
         
-        .stamp-grid { display: flex; justify-content: space-around; padding: 0 20px; gap: 10px; }
+        /* 体調・身体データセクション */
+        .stamp-grid { display: flex; justify-content: space-around; padding: 0 20px; gap: 10px; margin-bottom: 15px; }
         .stamp-btn { background: white; border: 1px solid #e2e8f0; border-radius: 16px; flex: 1; padding: 12px 0; font-size: 26px; cursor: pointer; transition: 0.2s; }
         .stamp-btn:active { transform: scale(1.15); border-color: #667eea; background: #f8faff; }
 
+        .vital-btn { width: calc(100% - 40px); margin: 0 20px 10px; padding: 14px; border-radius: 16px; border: 1.5px solid #667eea; background: #fff; color: #667eea; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .vital-btn:active { background: #f0f4ff; transform: translateY(1px); }
+
+        /* 記録グリッド */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
         .menu-item { background: white; border: 2px solid #f0f4f8; border-radius: 20px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.2s; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .menu-item:active { border-color: #667eea; transform: translateY(2px); }
@@ -32,6 +37,7 @@
         .label { font-size: 14px; font-weight: bold; color: #2d3748; }
         .sub { font-size: 10px; color: #a0aec0; margin-top: 4px; }
 
+        /* フッター */
         .footer-actions { padding: 25px 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-foot { padding: 14px; border-radius: 14px; border: none; font-size: 13px; font-weight: bold; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-green { background: #48bb78; }
@@ -57,21 +63,25 @@
         </div>
         <div class="guide-item">
             <div class="guide-num">2</div>
-            <div class="guide-text"><b>LINEで自動記録</b><br>初回は名前を入力するだけで登録完了。2回目以降はタップだけで即座に記録されます。</div>
+            <div class="guide-text"><b>LINEで自動記録</b><br>初回はお薬名を登録。2回目以降はタップだけで即座に記録完了します。</div>
         </div>
         <div class="guide-item">
             <div class="guide-num">3</div>
-            <div class="guide-text"><b>履歴をチェック</b><br>LINEメニューの「設定確認」から、これまでの記録をいつでも振り返ることができます。</div>
+            <div class="guide-text"><b>履歴をチェック</b><br>LINEメニューの「設定確認」から、これまでの記録をいつでも確認できます。</div>
         </div>
     </div>
 
-    <div class="section-title">今日の体調</div>
+    <div class="section-title">今日の体調・身体データ</div>
     <div class="stamp-grid">
         <button class="stamp-btn" onclick="sendToOA('😊')">😊</button>
         <button class="stamp-btn" onclick="sendToOA('😑')">😑</button>
         <button class="stamp-btn" onclick="sendToOA('😫')">😫</button>
         <button class="stamp-btn" onclick="sendToOA('🤒')">🤒</button>
     </div>
+    
+    <button class="vital-btn" onclick="location.href='vital.html'">
+        ⚖️ 体組成・身体データを入力する
+    </button>
 
     <div class="section-title">服薬・サプリ記録</div>
     <div class="menu-grid" id="grid">
