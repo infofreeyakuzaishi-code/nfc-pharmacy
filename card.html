@@ -1,3 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ろぎてむ | スマート服薬管理</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: white; width: 95%; max-width: 420px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; position: relative; padding-bottom: 10px; }
+        
+        /* ヘッダー：ろぎてむカラー */
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 35px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: 2px; font-weight: 800; }
+        .header p { margin: 5px 0 0; opacity: 0.9; font-size: 13px; font-family: monospace; }
+        
+        .guide-box { background: #f8faff; margin: 15px 20px; padding: 15px; border-radius: 15px; border-left: 5px solid #667eea; font-size: 13px; color: #4a5568; line-height: 1.6; }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
+        .menu-item { background: #fff; border: 2px solid #edf2f7; border-radius: 22px; padding: 15px 10px; text-align: center; transition: all 0.2s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 125px; }
+        .menu-item.active { border-color: #667eea; box-shadow: 0 5px 15px rgba(102,126,234,0.12); }
+        .menu-item.active:active { transform: scale(0.96); background: #f0f4ff; }
+
+        .icon { font-size: 34px; margin-bottom: 8px; }
+        .label { font-size: 14px; font-weight: bold; color: #2d3748; line-height: 1.4; }
+        .sub-label { font-size: 10px; font-weight: normal; opacity: 0.7; display: block; margin-top: 5px; color: #667eea; }
+
+        .action-area { padding: 10px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-action { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px 10px; border-radius: 18px; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn-rx { background-color: #48bb78; color: white; box-shadow: 0 4px 12px rgba(72,187,120,0.2); }
+        .btn-chat { background-color: #4a5568; color: white; box-shadow: 0 4px 12px rgba(74,85,104,0.2); }
+        .btn-icon { font-size: 22px; margin-bottom: 4px; }
+
+        .ad-container { padding: 10px 20px 10px; text-align: center; }
+        .ad-banner { display: block; width: 100%; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .ad-banner img { width: 100%; height: auto; vertical-align: middle; }
+        .ad-tag { font-size: 9px; color: #cbd5e0; text-align: right; margin-bottom: 4px; padding-right: 5px; letter-spacing: 1px; }
+
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10; font-weight: bold; color: #667eea; border-radius: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="loader">ろぎてむ 起動中...</div>
+    
+    <div class="header">
+        <h1>ろぎてむ</h1>
+        <p>Device ID: <span id="display-id">----</span></p>
+    </div>
+    
+    <div class="guide-box">
+        💊 <strong>記録：</strong>飲んだあとにボタンをタップ！<br>
+        📝 <strong>設定：</strong>「＋新規登録」から名前を送信。
+    </div>
+
+    <div class="menu-grid">
+        <div id="slot-0" class="menu-item"><div class="icon">☀️</div><div class="label">Loading...</div></div>
+        <div id="slot-1" class="menu-item"><div class="icon">💊</div><div class="label">Loading...</div></div>
+        <div id="slot-2" class="menu-item"><div class="icon">🍋</div><div class="label">Loading...</div></div>
+        <div id="slot-3" class="menu-item"><div class="icon">💪</div><div class="label">Loading...</div></div>
+    </div>
+
+    <div class="action-area">
+        <button class="btn-action btn-rx" onclick="sendLineSupport('rx')">
+            <span class="btn-icon">📸</span><span style="font-size: 13px;">処方箋を送信</span>
+        </button>
+        <button class="btn-action btn-chat" onclick="sendLineSupport('chat')">
+            <span class="btn-icon">💬</span><span style="font-size: 13px;">薬剤師に相談</span>
+        </button>
+    </div>
+
+    <div class="ad-container">
+        <div class="ad-tag">ADVERTISEMENT</div>
+        <a href="ads.html" class="ad-banner">
+            <img src="https://via.placeholder.com/400x120?text=ろぎてむ+広告パートナー募集中" alt="広告募集">
+        </a>
+    </div>
+</div>
+
 <script>
     // ★新しいGASのURLに更新してください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
@@ -46,3 +125,11 @@
         }
     };
 </script>
+
+    function sendLineSupport(type) {
+        let msg = type === 'rx' ? "処方箋の写真を送ります" : "薬剤師に相談したいです";
+        window.location.href = `https://line.me/R/oaMessage/${LINE_ID}/?${encodeURIComponent(msg)}`;
+    }
+</script>
+</body>
+</html>
