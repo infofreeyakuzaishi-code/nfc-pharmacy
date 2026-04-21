@@ -3,103 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>身体データ入力</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <title>体組成・身体データ入力</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; }
-        .form-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 20px; }
-        h3 { border-left: 4px solid #764ba2; padding-left: 10px; font-size: 14px; margin: 20px 0 10px; color: #4a5568; }
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; }
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; }
-        .btn-submit:disabled { background: #cbd5e0; cursor: not-allowed; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; color: #2d3748; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        h2 { font-size: 20px; text-align: center; color: #764ba2; margin-bottom: 20px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #718096; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #edf2f7; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+        input:focus { border-color: #764ba2; outline: none; background: #fefaff; }
+
+        .btn-submit { width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-submit:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* 送信完了後のスタイル */
+        #success-msg { display: none; text-align: center; margin-top: 20px; animation: fadeIn 0.5s ease-in-out; }
+        .line-btn { display: inline-block; width: 100%; padding: 16px; background-color: #06C755; color: white; text-decoration: none; border-radius: 15px; font-weight: bold; margin-top: 15px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div class="form-card">
-        <h2>📊 身体データ入力</h2>
-        <h3>【体組成】</h3>
-        <div class="input-group"><label>体重 (kg)</label><input type="number" id="weight" step="0.1"></div>
-        <div class="input-group"><label>体脂肪率 (%)</label><input type="number" id="fat_pc" step="0.1"></div>
-        <div class="input-group"><label>体脂肪量 (kg)</label><input type="number" id="fat_kg" step="0.1"></div>
-        <div class="input-group"><label>筋肉量 (kg)</label><input type="number" id="muscle" step="0.1"></div>
-        <div class="input-group">
-            <label>水分率(%) / 量(kg)</label>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="water_pc" step="0.1" placeholder="%">
-                <input type="number" id="water_kg" step="0.1" placeholder="kg">
-            </div>
-        </div>
-        <div class="input-group">
-            <label>たんぱく率(%) / 量(kg)</label>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="protein_pc" step="0.1" placeholder="%">
-                <input type="number" id="protein_kg" step="0.1" placeholder="kg">
-            </div>
-        </div>
-        <h3>【身体データ】</h3>
-        <div class="input-group"><label>歩数</label><input type="number" id="steps"></div>
-        <div class="input-group"><label>リブレ数値</label><input type="number" id="libre"></div>
-        <div class="input-group"><label>血液検査値</label><textarea id="blood" rows="2"></textarea></div>
-        <div class="input-group"><label>運動報告</label><textarea id="exercise" rows="2"></textarea></div>
 
-        <button class="btn-submit" id="submit-btn" onclick="submitData()">データを記録する</button>
+<div class="container" id="main-content">
+    <h2>⚖️ 身体データ入力</h2>
+    
+    <div class="input-group">
+        <label>体重 (kg)</label>
+        <input type="number" id="weight" step="0.1" placeholder="65.0">
+    </div>
+    
+    <div class="input-group">
+        <label>体脂肪率 (%)</label>
+        <input type="number" id="fat_pc" step="0.1" placeholder="15.0">
     </div>
 
-    <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+    <div class="input-group">
+        <label>筋肉量 (kg)</label>
+        <input type="number" id="muscle" step="0.1" placeholder="50.0">
+    </div>
 
-        // ページ読み込み時に即初期化
-        liff.init({ liffId: "2009771327-tpjaCzG9" }).then(() => {
-            if (!liff.isLoggedIn()) { liff.login(); }
-        });
+    <div class="input-group">
+        <label>歩数 (steps)</label>
+        <input type="number" id="steps" placeholder="8000">
+    </div>
 
-        async function submitData() {
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerText = "送信中...";
+    <div class="input-group">
+        <label>運動・メモ</label>
+        <textarea id="exercise" rows="2" placeholder="ウォーキング30分 など"></textarea>
+    </div>
 
-            try {
-                // IDだけ取得（これが一番失敗しにくい）
-                const context = await liff.getContext();
-                const userId = context.userId;
+    <button class="btn-submit" id="submit-btn" onclick="submitData()">データを送信する</button>
 
-                const payload = {
-                    type: "vital_record",
-                    userId: userId,
-                    weight: document.getElementById('weight').value,
-                    fat_pc: document.getElementById('fat_pc').value,
-                    fat_kg: document.getElementById('fat_kg').value,
-                    muscle: document.getElementById('muscle').value,
-                    water_pc: document.getElementById('water_pc').value,
-                    water_kg: document.getElementById('water_kg').value,
-                    protein_pc: document.getElementById('protein_pc').value,
-                    protein_kg: document.getElementById('protein_kg').value,
-                    steps: document.getElementById('steps').value,
-                    libre: document.getElementById('libre').value,
-                    blood: document.getElementById('blood').value,
-                    exercise: document.getElementById('exercise').value
-                };
+    <div id="success-msg">
+        <p style="font-weight: bold; color: #48bb78;">✅ 送信が完了しました！</p>
+        <p style="font-size: 14px; color: #718096;">LINE通知を確認してください。</p>
+        <a href="https://lin.ee/7COjqzB" class="line-btn">LINEへ戻る</a>
+    </div>
+</div>
 
-                // 送信
-                fetch(GAS_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify(payload)
-                });
+<script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-                // 送信完了の演出（no-corsなので即終了でOK）
-                btn.innerText = "完了！画面を閉じます";
-                setTimeout(() => { liff.closeWindow(); }, 1200);
+    async function init() {
+        await liff.init({ liffId: "2009771327-tpjaCzG9" });
+    }
 
-            } catch (e) {
-                alert("送信に失敗しました。LINEから開き直してください。");
-                btn.disabled = false;
-                btn.innerText = "再試行";
-            }
+    async function submitData() {
+        const btn = document.getElementById('submit-btn');
+        btn.innerText = "送信中...";
+        btn.disabled = true;
+
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+
+        const data = {
+            type: "vital_record",
+            userId: profile.userId,
+            weight: document.getElementById('weight').value,
+            fat_pc: document.getElementById('fat_pc').value,
+            muscle: document.getElementById('muscle').value,
+            steps: document.getElementById('steps').value,
+            exercise: document.getElementById('exercise').value
+        };
+
+        try {
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify(data)
+            });
+
+            // 入力フォームを隠して完了メッセージを表示
+            document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
+            btn.style.display = 'none';
+            document.getElementById('success-msg').style.display = 'block';
+            
+        } catch (e) {
+            alert("エラーが発生しました。");
+            btn.disabled = false;
+            btn.innerText = "データを送信する";
         }
-    </script>
+    }
+
+    init();
+</script>
+
 </body>
 </html>
