@@ -1,49 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ろぎーシール記録</title>
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ろぎてむ/Loggy-System/</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
+        .header p { margin: 10px 0 0; opacity: 0.9; font-size: 14px; }
+        
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        
+        /* 説明欄のスタイル */
+        .guide-card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid #764ba2; }
+        .guide-item { display: flex; align-items: flex-start; margin-bottom: 12px; font-size: 14px; line-height: 1.6; }
+        .guide-item:last-child { margin-bottom: 0; }
+        .guide-icon { margin-right: 12px; font-size: 18px; width: 24px; text-align: center; }
+        
+        .section-title { font-size: 13px; font-weight: bold; color: #718096; margin-bottom: 10px; margin-left: 5px; text-transform: uppercase; }
+        
+        .mood-container { display: flex; justify-content: space-between; margin-bottom: 25px; background: white; padding: 15px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .mood-btn { font-size: 28px; cursor: pointer; transition: transform 0.2s; background: none; border: none; padding: 5px; }
+        .mood-btn:active { transform: scale(1.3); }
+
+        .btn-vital { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #764ba2; background: white; color: #764ba2; font-weight: bold; font-size: 15px; margin-bottom: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: white; border-radius: 18px; padding: 25px 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .card:active { background-color: #f0f4ff; border-color: #764ba2; transform: translateY(2px); }
+        .card img { width: 45px; height: 45px; margin-bottom: 12px; }
+        .card-name { font-size: 15px; font-weight: bold; color: #2d3748; margin-bottom: 4px; }
+        .card-sub { font-size: 11px; color: #a0aec0; }
+    </style>
 </head>
 <body>
-  <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
-    <p>記録中...</p>
-  </div>
 
-  <script>
-    // 1. LIFFの初期化
-    liff.init({ liffId: "2009771327-tpjaCzG9" }).then(() => {
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      } else {
-        liff.getProfile().then(profile => {
-          const urlParams = new URLSearchParams(window.location.search);
-          const itemID = urlParams.get('item');
-          
-          // 2. GASのURLを最新に差し替えて送信
-          // ※【重要】下のURLを必ずあなたの最新のGAS URLに書き換えてください
-          const gasUrl = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+    <div class="header">
+        <h1>ろぎてむ/Loggy-System/</h1>
+        <p>カードID: lg-vw7k7t</p>
+    </div>
 
-          fetch(gasUrl, {
-            method: "POST",
-            mode: "no-cors", // ブラウザのエラー回避用
-            body: JSON.stringify({
-              item: itemID,
-              userId: profile.userId,
-              displayName: profile.displayName
-            })
-          }).then(() => {
-            // 3. 送信完了したらLINEの画面を閉じる
+    <div class="container">
+        <div class="guide-card">
+            <div class="guide-item">
+                <span class="guide-icon">💊</span>
+                <span><b>記録：</b>登録済みのボタンをタップするだけで、今の時間を自動で記録します。</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">📝</span>
+                <span><b>新規：</b>「＋新規登録」から新しいお薬やサプリの名前を設定できます。</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">⚙️</span>
+                <span><b>設定：</b>LINEメニューの「設定確認」から、登録名の変更や解除が可能です。</span>
+            </div>
+        </div>
+
+        <div class="section-title">今日の体調（タップで報告）</div>
+        <div class="mood-container">
+            <button class="mood-btn" onclick="sendMood('😊')">😊</button>
+            <button class="mood-btn" onclick="sendMood('😑')">😑</button>
+            <button class="mood-btn" onclick="sendMood('😫')">😫</button>
+            <button class="mood-btn" onclick="sendMood('🤒')">🤒</button>
+        </div>
+
+        <button class="btn-vital" onclick="window.location.href='vital.html'">
+            ⚖️ 体組成・身体データを入力する
+        </button>
+
+        <div class="section-title">服薬・サプリ記録</div>
+        <div class="grid" id="item-grid">
+            </div>
+    </div>
+
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+
+        async function init() {
+            await liff.init({ liffId: "2009771327-tpjaCzG9" });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            loadSettings();
+        }
+
+        async function loadSettings() {
+            const res = await fetch(`${GAS_URL}?type=getSettings&item=lg-vw7k7t`);
+            const items = await res.json();
+            const grid = document.getElementById('item-grid');
+            grid.innerHTML = "";
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const isNew = item.name === "未設定";
+                card.onclick = () => sendRecord(item.id, item.name);
+                
+                card.innerHTML = `
+                    <img src="https://cdn-icons-png.flaticon.com/512/822/822143.png" style="${isNew ? 'filter: grayscale(1); opacity: 0.5;' : ''}">
+                    <div class="card-name">${isNew ? '+新規登録' : item.name}</div>
+                    <div class="card-sub">${isNew ? '' : '飲んだらタップ'}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function sendMood(mood) {
+            const profile = await liff.getProfile();
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ type: "mood", userId: profile.userId, events: [{ message: { text: mood } }] })
+            });
             liff.closeWindow();
-          }).catch((error) => {
-            alert("送信エラー: " + error);
-          });
-        });
-      }
-    }).catch((err) => {
-      console.log('LIFF初期化失敗', err);
-    });
-  </script>
+        }
+
+        async function sendRecord(id, name) {
+            const profile = await liff.getProfile();
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ item: id, userId: profile.userId, displayName: profile.displayName })
+            });
+            liff.closeWindow();
+        }
+
+        init();
+    </script>
 </body>
 </html>
