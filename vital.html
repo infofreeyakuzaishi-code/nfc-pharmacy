@@ -6,7 +6,9 @@
     <title>身体データ入力</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; margin: 0; scroll-behavior: smooth; }
+        /* スムーズスクロールを有効化 */
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; padding: 15px; color: #2d3748; margin: 0; }
         .form-card { background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px; margin: auto; }
         h2 { text-align: center; color: #764ba2; font-size: 20px; margin-bottom: 25px; }
         h3 { border-left: 4px solid #764ba2; padding-left: 12px; font-size: 15px; margin: 25px 0 15px; color: #4a5568; background: #f8f9fa; padding-top: 5px; padding-bottom: 5px; }
@@ -14,15 +16,12 @@
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 13px; margin-bottom: 6px; font-weight: bold; color: #718096; }
         input, textarea { width: 100%; padding: 12px; border: 1.5px solid #edf2f7; border-radius: 12px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; transition: 0.2s; }
-        input:focus, textarea:focus { border-color: #764ba2; outline: none; background: #fefaff; }
         
         /* 送信ボタン */
         .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; transition: all 0.3s; }
-        
-        /* 送信完了後のボタン状態（グレー） */
         .btn-submit.completed { background: #a0aec0 !important; cursor: default; transform: scale(1); }
         
-        /* LINEボタンエリア */
+        /* 完了後のエリア：はみ出し防止のためbox-sizingを徹底 */
         #after-submit { 
             display: none; 
             text-align: center; 
@@ -31,15 +30,15 @@
             border-radius: 20px;
             background: #ffffff;
             border: 2px solid #06C755;
-            animation: fadeInUp 0.6s ease-out forwards;
+            box-sizing: border-box; /* はみ出し防止 */
+            animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         .line-btn { 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 10px;
             width: 100%; 
-            padding: 16px; 
+            padding: 16px 0; /* 左右パディングを0にして幅を安定させる */
             background-color: #06C755; 
             color: white; 
             text-decoration: none; 
@@ -47,13 +46,18 @@
             font-weight: bold; 
             font-size: 16px;
             margin-top: 15px;
+            box-sizing: border-box; /* はみ出し防止 */
             box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
         }
         
+        /* ふわっとしたアニメーション */
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* スクロール用の余白（一番下までスクロールしやすくするため） */
+        .spacer { height: 50px; }
     </style>
 </head>
 <body>
@@ -65,6 +69,7 @@
         <div class="input-group"><label>体脂肪率 (%)</label><input type="number" id="fat_pc" step="0.1" placeholder="例: 18.5"></div>
         <div class="input-group"><label>体脂肪量 (kg)</label><input type="number" id="fat_kg" step="0.1" placeholder="例: 12.0"></div>
         <div class="input-group"><label>筋肉量 (kg)</label><input type="number" id="muscle" step="0.1" placeholder="例: 50.1"></div>
+        
         <div class="input-group">
             <label>水分率(%) / 量(kg)</label>
             <div style="display:flex; gap:8px;">
@@ -72,6 +77,7 @@
                 <input type="number" id="water_kg" step="0.1" placeholder="kg">
             </div>
         </div>
+        
         <div class="input-group">
             <label>たんぱく率(%) / 量(kg)</label>
             <div style="display:flex; gap:8px;">
@@ -90,11 +96,11 @@
 
         <div id="after-submit">
             <p style="font-weight: bold; color: #2d3748; margin: 0;">✅ 記録を送信しました</p>
-            <p style="font-size: 13px; color: #718096; margin: 5px 0 0;">LINE通知が届いているか確認してください。</p>
-            <a href="https://lin.ee/7COjqzB" class="line-btn">
-                <span>LINEへ戻る</span>
-            </a>
+            <p style="font-size: 13px; color: #718096; margin: 5px 0 0;">LINE通知を確認してください。</p>
+            <a href="https://lin.ee/7COjqzB" class="line-btn">LINEへ戻る</a>
         </div>
+        
+        <div class="spacer"></div>
     </div>
 
     <script>
@@ -106,6 +112,8 @@
 
         async function submitData() {
             const btn = document.getElementById('submit-btn');
+            const afterMsg = document.getElementById('after-submit');
+            
             btn.disabled = true;
             btn.innerText = "送信中...";
 
@@ -136,18 +144,21 @@
                     body: JSON.stringify(payload)
                 });
 
-                // --- 送信後の演出 ---
+                // 演出
                 btn.classList.add('completed');
                 btn.innerText = "送信完了";
                 
-                // LINEボタンを表示
-                const afterMsg = document.getElementById('after-submit');
+                // 表示
                 afterMsg.style.display = 'block';
 
-                // 自動スクロール（新しく出たエリアがしっかり見えるように）
+                // より「ふわっ」とスクロールさせるための調整
+                // 要素が現れてから少し待って、中心にくるようにスクロール
                 setTimeout(() => {
-                    afterMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                }, 350);
+                    afterMsg.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' // 画面の真ん中に持ってくることで余裕を持たせる
+                    });
+                }, 400);
 
             } catch (e) {
                 alert("エラーが発生しました。");
