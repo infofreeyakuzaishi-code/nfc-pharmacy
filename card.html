@@ -37,11 +37,20 @@
         .label { font-size: 14px; font-weight: bold; color: #2d3748; }
         .sub { font-size: 10px; color: #a0aec0; margin-top: 4px; }
 
-        /* フッター */
-        .footer-actions { padding: 25px 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        /* フッターアクション */
+        .footer-actions { padding: 25px 20px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-foot { padding: 14px; border-radius: 14px; border: none; font-size: 13px; font-weight: bold; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-green { background: #48bb78; }
         .btn-gray { background: #4a5568; }
+
+        /* ★広告バナースライダー★ */
+        .slider-container { margin: 0 20px; overflow: hidden; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); background: #eee; height: 80px; position: relative; }
+        .slider-wrapper { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
+        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; cursor: pointer; text-decoration: none; }
+        /* サンプル背景色（実際は画像URLに置き換え可能） */
+        .slide:nth-child(1) { background: #ed64a6; }
+        .slide:nth-child(2) { background: #4fd1c5; }
+        .slide:nth-child(3) { background: #f6ad55; }
 
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #667eea; }
     </style>
@@ -95,6 +104,14 @@
         <button class="btn-foot btn-green" onclick="sendToOA('処方箋を送信')">📸 処方箋を送信</button>
         <button class="btn-foot btn-gray" onclick="sendToOA('薬剤師に相談')">💬 専門家に相談</button>
     </div>
+
+    <div class="slider-container">
+        <div class="slider-wrapper" id="slider">
+            <a href="#" class="slide">🌟 特典情報をチェック！</a>
+            <a href="#" class="slide">📅 次回の受診日を登録</a>
+            <a href="#" class="slide">💡 お薬の豆知識を見る</a>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -103,7 +120,19 @@
 
     function sendToOA(txt) { window.location.href = `https://line.me/R/oaMessage/@534uoyka/?${encodeURIComponent(txt)}`; }
 
+    // スライダーの制御
+    let currentSlide = 0;
+    function startSlider() {
+        const slider = document.getElementById('slider');
+        const slides = document.querySelectorAll('.slide');
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }, 3000); // 3秒ごとにシュッ
+    }
+
     window.onload = async () => {
+        startSlider(); // スライダー開始
         const id = new URLSearchParams(window.location.search).get('item') || "lg-vw7k7t";
         document.getElementById('display-id').innerText = id;
         try {
