@@ -26,8 +26,9 @@
         .stamp-btn { background: white; border: 1px solid #e2e8f0; border-radius: 16px; flex: 1; padding: 12px 0; font-size: 26px; cursor: pointer; transition: 0.2s; }
         .stamp-btn:active { transform: scale(1.15); border-color: #667eea; background: #f8faff; }
 
-        .vital-btn { width: calc(100% - 40px); margin: 0 20px 10px; padding: 14px; border-radius: 16px; border: 1.5px solid #667eea; background: #fff; color: #667eea; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .vital-btn:active { background: #f0f4ff; transform: translateY(1px); }
+        /* 汎用ボタン（体組成 & カレンダー） */
+        .action-btn { width: calc(100% - 40px); margin: 0 20px 10px; padding: 14px; border-radius: 16px; border: 1.5px solid #667eea; background: #fff; color: #667eea; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; text-decoration: none; box-sizing: border-box; }
+        .action-btn:active { background: #f0f4ff; transform: translateY(1px); }
 
         /* 記録グリッド */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
@@ -43,14 +44,10 @@
         .btn-green { background: #48bb78; }
         .btn-gray { background: #4a5568; }
 
-        /* ★広告バナースライダー★ */
+        /* 広告バナースライダー */
         .slider-container { margin: 0 20px; overflow: hidden; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); background: #eee; height: 80px; position: relative; }
         .slider-wrapper { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
         .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; cursor: pointer; text-decoration: none; }
-        /* サンプル背景色（実際は画像URLに置き換え可能） */
-        .slide:nth-child(1) { background: #ed64a6; }
-        .slide:nth-child(2) { background: #4fd1c5; }
-        .slide:nth-child(3) { background: #f6ad55; }
 
         #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #667eea; }
     </style>
@@ -88,8 +85,11 @@
         <button class="stamp-btn" onclick="sendToOA('🤒')">🤒</button>
     </div>
     
-    <button class="vital-btn" onclick="location.href='vital.html'">
+    <button class="action-btn" onclick="location.href='vital.html'">
         ⚖️ 体組成・身体データを入力する
+    </button>
+    <button class="action-btn" onclick="location.href='https://liff.line.me/2009771327-ZlTtzNT6'">
+        📅 服薬カレンダー（記録をみる）
     </button>
 
     <div class="section-title">服薬・サプリ記録</div>
@@ -105,7 +105,7 @@
         <button class="btn-foot btn-gray" onclick="sendToOA('薬剤師に相談')">💬 専門家に相談</button>
     </div>
 
- <div class="slider-container">
+    <div class="slider-container">
         <div class="slider-wrapper" id="slider">
             <a href="https://drive.google.com/file/d/1wmSK1RXIBRThvfWieqbFWC8ACXEY4_Nb/view?usp=sharing" class="slide">
                 <img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/2次検診推奨.png"  style="width: 100%; height: 100%; object-fit: cover;">
@@ -118,6 +118,7 @@
             </a>
         </div>
     </div>
+</div>
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
@@ -130,14 +131,15 @@
     function startSlider() {
         const slider = document.getElementById('slider');
         const slides = document.querySelectorAll('.slide');
+        if(!slider || slides.length === 0) return;
         setInterval(() => {
             currentSlide = (currentSlide + 1) % slides.length;
             slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-        }, 3000); // 3秒ごとにシュッ
+        }, 3000);
     }
 
     window.onload = async () => {
-        startSlider(); // スライダー開始
+        startSlider();
         const id = new URLSearchParams(window.location.search).get('item') || "lg-vw7k7t";
         document.getElementById('display-id').innerText = id;
         try {
