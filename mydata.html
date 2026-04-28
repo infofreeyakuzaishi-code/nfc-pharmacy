@@ -8,43 +8,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --main-grad: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%); --bg: #f0f4f8; --text: #2d3748; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text); min-height: 100vh; }
         
-        /* 修正ポイント：bodyのheight固定を解除し、自然なスクロールを許可 */
-        body { 
-            font-family: -apple-system, sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            color: var(--text); 
-            min-height: 100vh;
-        }
-        
-        /* 修正ポイント：cardの高さをautoにして、中身に応じて伸びるようにする */
-        .card { 
-            background: white; 
-            width: 100%; 
-            max-width: 420px; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        
+        .card { background: white; width: 100%; max-width: 420px; display: flex; flex-direction: column; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         .header { background: var(--main-grad); color: white; padding: 20px 15px; text-align: center; flex-shrink: 0; }
         .header h1 { margin: 0; font-size: 18px; font-weight: 800; }
         
+        /* ボタンとしてのスタイル */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #fff; border-bottom: 1px solid #eee; }
-        .stat-card { background: #f8fafc; padding: 10px; border-radius: 15px; text-align: center; border: 1px solid #edf2f7; }
-        .stat-label { font-size: 10px; color: #64748b; }
+        .stat-card { 
+            background: #f8fafc; padding: 10px; border-radius: 15px; text-align: center; 
+            border: 2px solid transparent; cursor: pointer; transition: all 0.2s ease;
+        }
+        .stat-card.active { border-color: #4fd1c5; background: #fff; box-shadow: 0 4px 12px rgba(79, 209, 197, 0.15); transform: translateY(-2px); }
+        .stat-label { font-size: 10px; color: #64748b; margin-bottom: 2px; }
         .stat-value { font-size: 18px; font-weight: 800; color: #2d3748; }
 
-        .chart-container { padding: 15px; background: #fff; border-bottom: 1px solid #f0f4f8; height: 180px; display: none; }
+        .chart-container { padding: 15px; background: #fff; border-bottom: 1px solid #f0f4f8; height: 220px; display: none; }
+        .chart-header { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+        .chart-title { font-size: 12px; font-weight: bold; color: #4fd1c5; }
         
-        /* 修正ポイント：ここをスクロールさせず、ページ全体でスクロールするように変更 */
         .history-section { padding: 15px 15px 100px; background: #fff; }
-        
         .history-card { background: white; border: 1px solid #f1f5f9; border-radius: 18px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .history-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .date-badge { font-size: 11px; font-weight: 700; color: #94a3b8; }
@@ -74,14 +58,29 @@
 
     <div id="content" style="display:none;">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">最新体重</div><div class="stat-value"><span id="v-w">--</span><small style="font-size:10px;">kg</small></div></div>
-            <div class="stat-card"><div class="stat-label">体脂肪率</div><div class="stat-value"><span id="v-f">--</span><small style="font-size:10px;">%</small></div></div>
-            <div class="stat-card"><div class="stat-label">筋肉量</div><div class="stat-value"><span id="v-m">--</span><small style="font-size:10px;">kg</small></div></div>
-            <div class="stat-card"><div class="stat-label">水分率</div><div class="stat-value"><span id="v-wa">--</span><small style="font-size:10px;">%</small></div></div>
+            <div class="stat-card active" id="btn-weight" onclick="updateChart('weight', '体重(kg)', '#4fd1c5')">
+                <div class="stat-label">最新体重</div>
+                <div class="stat-value"><span id="v-w">--</span><small style="font-size:10px;">kg</small></div>
+            </div>
+            <div class="stat-card" id="btn-fat" onclick="updateChart('fat_pc', '体脂肪率(%)', '#f6ad55')">
+                <div class="stat-label">体脂肪率</div>
+                <div class="stat-value"><span id="v-f">--</span><small style="font-size:10px;">%</small></div>
+            </div>
+            <div class="stat-card" id="btn-muscle" onclick="updateChart('muscle', '筋肉量(kg)', '#68d391')">
+                <div class="stat-label">筋肉量</div>
+                <div class="stat-value"><span id="v-m">--</span><small style="font-size:10px;">kg</small></div>
+            </div>
+            <div class="stat-card" id="btn-water" onclick="updateChart('water_pc', '水分率(%)', '#63b3ed')">
+                <div class="stat-label">水分率</div>
+                <div class="stat-value"><span id="v-wa">--</span><small style="font-size:10px;">%</small></div>
+            </div>
         </div>
 
         <div class="chart-container" id="chart-area">
-            <canvas id="weightChart"></canvas>
+            <div class="chart-header">
+                <div class="chart-title" id="active-chart-title">📈 体重(kg)</div>
+            </div>
+            <canvas id="mainChart"></canvas>
         </div>
 
         <div class="history-section" id="history-list"></div>
@@ -91,6 +90,8 @@
 <script>
     const LIFF_ID = "2009771327-ZlTtzNT6"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+    let myChart = null;
+    let rawData = [];
 
     async function init() {
         try {
@@ -99,70 +100,44 @@
             const profile = await liff.getProfile();
             document.getElementById('sub-text').innerText = profile.displayName + " さんの履歴";
 
-            // GASからデータ取得
             const response = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
-            const data = await response.json();
+            rawData = await response.json();
 
-            if (data && data.length > 0) {
-                // サマリー反映
-                const L = data[0];
+            if (rawData && rawData.length > 0) {
+                const L = rawData[0];
                 document.getElementById('v-w').innerText = L.weight || '--';
                 document.getElementById('v-f').innerText = L.fat_pc || '--';
                 document.getElementById('v-m').innerText = L.muscle || '--';
                 document.getElementById('v-wa').innerText = L.water_pc || '--';
 
-                // グラフ（直近20件くらいが見やすい）
-                if (data.length >= 2) {
+                if (rawData.length >= 2) {
                     document.getElementById('chart-area').style.display = 'block';
-                    drawChart(data.slice(0, 20));
+                    createChart('weight', '体重(kg)', '#4fd1c5'); // 初回は体重
                 }
 
-                // 履歴全件生成
-                document.getElementById('history-list').innerHTML = data.map((item, i) => `
-                    <div class="history-card">
-                        <div class="history-header">
-                            <span class="date-badge">📅 ${item.fullDate}</span>
-                            <span style="font-size:10px; color:#4fd1c5; font-weight:bold;">#${data.length - i}</span>
-                        </div>
-                        <div class="data-grid">
-                            <div class="data-item"><span class="d-label">体重</span><span class="d-val">${item.weight}kg</span></div>
-                            <div class="data-item"><span class="d-label">体脂肪</span><span class="d-val">${item.fat_pc}%</span></div>
-                            <div class="data-item"><span class="d-label">筋肉量</span><span class="d-val">${item.muscle}kg</span></div>
-                            <div class="data-item"><span class="d-label">歩数</span><span class="d-val">${item.steps}</span></div>
-                            <div class="data-item"><span class="d-label">水分</span><span class="d-val">${item.water_pc}%</span></div>
-                            <div class="data-item"><span class="d-label">たんぱく</span><span class="d-val">${item.protein_pc}%</span></div>
-                        </div>
-                        <div class="extra-row">
-                            <div class="pill">リブレ: ${item.libre || '--'}</div>
-                            <div class="pill">血液: ${item.blood || '--'}</div>
-                        </div>
-                        ${item.report ? `<div class="report-box">${item.report}</div>` : ''}
-                    </div>
-                `).join('');
+                renderHistory();
 
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
-            } else {
-                document.getElementById('loader').innerText = "データが見つかりません";
             }
-        } catch (e) { 
-            document.getElementById('loader').innerText = "通信エラーが発生しました"; 
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     }
 
-    function drawChart(recentData) {
-        const ctx = document.getElementById('weightChart').getContext('2d');
-        const revData = [...recentData].reverse();
-        new Chart(ctx, {
+    // グラフを最初に作成する関数
+    function createChart(key, label, color) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const displayData = [...rawData].slice(0, 20).reverse();
+        
+        myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: revData.map(d => d.date),
+                labels: displayData.map(d => d.date),
                 datasets: [{
-                    data: revData.map(d => d.weight),
-                    borderColor: '#4fd1c5',
-                    backgroundColor: 'rgba(79, 209, 197, 0.1)',
-                    fill: true, tension: 0.4, borderWidth: 3, pointRadius: 2, pointBackgroundColor: '#fff'
+                    label: label,
+                    data: displayData.map(d => d[key]),
+                    borderColor: color,
+                    backgroundColor: color + '1A', // 10% opacity
+                    fill: true, tension: 0.4, borderWidth: 3, pointRadius: 3, pointBackgroundColor: '#fff'
                 }]
             },
             options: {
@@ -176,6 +151,51 @@
             }
         });
     }
+
+    // データを切り替える関数
+    function updateChart(key, label, color) {
+        if (!myChart) return;
+        
+        // ボタンの活性化表示切り替え
+        document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
+        const btnId = key === 'weight' ? 'btn-weight' : key === 'fat_pc' ? 'btn-fat' : key === 'muscle' ? 'btn-muscle' : 'btn-water';
+        document.getElementById(btnId).classList.add('active');
+        
+        document.getElementById('active-chart-title').innerText = '📈 ' + label;
+
+        const displayData = [...rawData].slice(0, 20).reverse();
+        myChart.data.labels = displayData.map(d => d.date);
+        myChart.data.datasets[0].label = label;
+        myChart.data.datasets[0].data = displayData.map(d => d[key]);
+        myChart.data.datasets[0].borderColor = color;
+        myChart.data.datasets[0].backgroundColor = color + '1A';
+        myChart.update('active'); // アニメーション付きで更新
+    }
+
+    function renderHistory() {
+        document.getElementById('history-list').innerHTML = rawData.map((item, i) => `
+            <div class="history-card">
+                <div class="history-header">
+                    <span class="date-badge">📅 ${item.fullDate}</span>
+                    <span style="font-size:10px; color:#4fd1c5; font-weight:bold;">#${rawData.length - i}</span>
+                </div>
+                <div class="data-grid">
+                    <div class="data-item"><span class="d-label">体重</span><span class="d-val">${item.weight}kg</span></div>
+                    <div class="data-item"><span class="d-label">体脂肪</span><span class="d-val">${item.fat_pc}%</span></div>
+                    <div class="data-item"><span class="d-label">筋肉量</span><span class="d-val">${item.muscle}kg</span></div>
+                    <div class="data-item"><span class="d-label">歩数</span><span class="d-val">${item.steps}</span></div>
+                    <div class="data-item"><span class="d-label">水分</span><span class="d-val">${item.water_pc}%</span></div>
+                    <div class="data-item"><span class="d-label">たんぱく</span><span class="d-val">${item.protein_pc}%</span></div>
+                </div>
+                <div class="extra-row">
+                    <div class="pill">リブレ: ${item.libre || '--'}</div>
+                    <div class="pill">血液: ${item.blood || '--'}</div>
+                </div>
+                ${item.report ? `<div class="report-box">${item.report}</div>` : ''}
+            </div>
+        `).join('');
+    }
+
     window.onload = init;
 </script>
 </body>
