@@ -1,39 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイデータ - 身体データ履歴</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; width: 100%; max-width: 400px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%); color: white; padding: 30px 20px; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+        .stat-card { background: #f8fafc; padding: 15px; border-radius: 18px; text-align: center; border: 1px solid #edf2f7; }
+        .stat-label { font-size: 11px; color: #718096; margin-bottom: 5px; }
+        .stat-value { font-size: 18px; font-weight: bold; color: #2d3748; }
+        .stat-unit { font-size: 11px; margin-left: 2px; color: #a0aec0; }
+        .history-section { padding: 0 20px 20px; }
+        .history-title { font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 10px; }
+        .history-item { border-bottom: 1px solid #f0f4f8; padding: 8px 0; display: flex; justify-content: space-between; font-size: 12px; color: #718096; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1 style="margin:0; font-size:20px;">📊 身体データ履歴</h1>
+        <p id="user-display-name" style="margin:5px 0 0; font-size:12px; opacity:0.9;">読み込み中...</p>
+    </div>
+
+    <div id="loader" style="padding:40px; text-align:center; color:#4fd1c5; font-weight:bold;">データを取得中...</div>
+
+    <div id="content" style="display:none;">
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">最新の体重</div><div class="stat-value" id="val-weight">--<span class="stat-unit">kg</span></div></div>
+            <div class="stat-card"><div class="stat-label">体脂肪率</div><div class="stat-value" id="val-fat-rate">--<span class="stat-unit">%</span></div></div>
+            <div class="stat-card"><div class="stat-label">体脂肪量</div><div class="stat-value" id="val-fat-mass">--<span class="stat-unit">kg</span></div></div>
+            <div class="stat-card"><div class="stat-label">最新の筋肉量</div><div class="stat-value" id="val-muscle">--<span class="stat-unit">kg</span></div></div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">これまでの記録 (最新15件)</div>
+            <div id="history-list"></div>
+        </div>
+    </div>
+</div>
+
 <script>
     const LIFF_ID = "2009771327-ZlTtzNT6"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-    async function init() {
+    async function initLIFF() {
         try {
             await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
+            if (!liff.isLoggedIn()) {
+                liff.login();
+                return;
+            }
             const profile = await liff.getProfile();
-            document.getElementById('user-name').innerText = profile.displayName + " さんの記録";
+            const displayNameElem = document.getElementById('user-display-name');
+            if (displayNameElem) {
+                displayNameElem.innerText = profile.displayName + " さんの記録";
+            }
 
-            // 自分のユーザーIDを投げて、C列にそのIDがある行だけを抽出してもらう
-            const res = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
-            const data = await res.json();
+            // GASからデータ取得
+            const response = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
+            const data = await response.json();
 
             if (data && data.length > 0) {
-                const latest = data[0]; // 最新の1件
-                document.getElementById('v-w').innerHTML = `${latest.weight || '--'}<span class="unit">kg</span>`;
-                document.getElementById('v-fr').innerHTML = `${latest.fat_pc || '--'}<span class="unit">%</span>`;
-                document.getElementById('v-fm').innerHTML = `${latest.fat_kg || '--'}<span class="unit">kg</span>`;
-                document.getElementById('v-m').innerHTML = `${latest.muscle || '--'}<span class="unit">kg</span>`;
+                const latest = data[0];
+                
+                // 各要素が存在するか確認してから値をセット（エラー防止）
+                const w = document.getElementById('val-weight');
+                const fr = document.getElementById('val-fat-rate');
+                const fm = document.getElementById('val-fat-mass');
+                const m = document.getElementById('val-muscle');
+                
+                if(w) w.innerHTML = `${latest.weight || '--'}<span class="stat-unit">kg</span>`;
+                if(fr) fr.innerHTML = `${latest.fat_pc || '--'}<span class="stat-unit">%</span>`;
+                if(fm) fm.innerHTML = `${latest.fat_kg || '--'}<span class="stat-unit">kg</span>`;
+                if(m) m.innerHTML = `${latest.muscle || '--'}<span class="stat-unit">kg</span>`;
 
-                document.getElementById('history-list').innerHTML = data.map(h => `
-                    <div class="history-item">
-                        <span class="history-date">${h.date}</span>
-                        <span>${h.weight}kg / ${h.muscle}kg</span>
-                    </div>
-                `).join('');
+                // 履歴リストの生成
+                const listElem = document.getElementById('history-list');
+                if (listElem) {
+                    listElem.innerHTML = data.map(item => `
+                        <div class="history-item">
+                            <span>${item.date}</span>
+                            <span>${item.weight}kg / ${item.muscle}kg</span>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
             } else {
-                document.getElementById('history-list').innerText = "まだ記録がありません。";
+                document.getElementById('loader').innerText = "まだ記録がありません。";
             }
-            document.getElementById('loader').style.display = "none";
-            document.getElementById('main-content').style.display = "block";
-        } catch (e) { 
-            document.getElementById('loader').innerText = "データ取得エラー"; 
+        } catch (error) {
+            console.error(error);
+            document.getElementById('loader').innerText = "エラー: データの読み込みに失敗しました。";
         }
     }
-    init();
+
+    window.onload = initLIFF;
 </script>
+</body>
+</html>
