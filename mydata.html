@@ -1,62 +1,5 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ろぎてむ - マイデータ</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .dashboard-card { background: white; width: 100%; max-width: 420px; border-radius: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding-bottom: 25px; overflow: hidden; }
-        .header { background: linear-gradient(135deg, #48bb78 0%, #38b2ac 100%); color: white; padding: 30px 20px; text-align: center; }
-        .header h1 { margin: 0; font-size: 22px; }
-        
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .stat-item { background: #f8fafc; border: 1px solid #edf2f7; padding: 15px; border-radius: 18px; text-align: center; }
-        .stat-label { font-size: 11px; color: #718096; margin-bottom: 5px; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #2d3748; }
-        .stat-unit { font-size: 12px; margin-left: 3px; }
-
-        .history-section { padding: 0 20px; }
-        .section-title { font-size: 13px; font-weight: bold; color: #a0aec0; margin-bottom: 12px; text-transform: uppercase; }
-        .history-item { background: white; border-bottom: 1px solid #edf2f7; padding: 12px 5px; display: flex; justify-content: space-between; align-items: center; }
-        .history-date { font-size: 12px; color: #718096; }
-        .history-main { font-size: 14px; font-weight: bold; color: #4a5568; }
-        
-        #loader { padding: 50px; text-align: center; color: #38b2ac; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<div class="dashboard-card">
-    <div class="header">
-        <h1>📊 身体データ履歴</h1>
-        <p id="user-name-display" style="opacity: 0.9; font-size: 13px; margin: 5px 0 0;">読み込み中...</p>
-    </div>
-
-    <div id="loader">データを取得中...</div>
-
-    <div id="content" style="display: none;">
-        <div class="stat-grid">
-            <div class="stat-item">
-                <div class="stat-label">最新の体重</div>
-                <div class="stat-value" id="latest-weight">--<span class="stat-unit">kg</span></div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">最新の筋肉量</div>
-                <div class="stat-value" id="latest-muscle">--<span class="stat-unit">kg</span></div>
-            </div>
-        </div>
-
-        <div class="history-section">
-            <div class="section-title">これまでの記録（最新15件）</div>
-            <div id="history-list"></div>
-        </div>
-    </div>
-</div>
-
 <script>
-    const LIFF_ID = "2009771327-ZlTtzNT6"; // カレンダーと同じLIFF IDでOK
+    const LIFF_ID = "2009771327-ZlTtzNT6"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
     async function init() {
@@ -64,34 +7,33 @@
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
-            document.getElementById('user-name-display').innerText = `${profile.displayName} さんの記録`;
+            document.getElementById('user-name').innerText = profile.displayName + " さんの記録";
 
+            // 自分のユーザーIDを投げて、C列にそのIDがある行だけを抽出してもらう
             const res = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
             const data = await res.json();
 
-            if (data.length > 0) {
-                const latest = data[0];
-                document.getElementById('latest-weight').innerHTML = `${latest.weight}<span class="stat-unit">kg</span>`;
-                document.getElementById('latest-muscle').innerHTML = `${latest.muscle}<span class="stat-unit">kg</span>`;
-                
-                const list = document.getElementById('history-list');
-                list.innerHTML = data.map(row => `
+            if (data && data.length > 0) {
+                const latest = data[0]; // 最新の1件
+                document.getElementById('v-w').innerHTML = `${latest.weight || '--'}<span class="unit">kg</span>`;
+                document.getElementById('v-fr').innerHTML = `${latest.fat_pc || '--'}<span class="unit">%</span>`;
+                document.getElementById('v-fm').innerHTML = `${latest.fat_kg || '--'}<span class="unit">kg</span>`;
+                document.getElementById('v-m').innerHTML = `${latest.muscle || '--'}<span class="unit">kg</span>`;
+
+                document.getElementById('history-list').innerHTML = data.map(h => `
                     <div class="history-item">
-                        <div class="history-date">${row.date}</div>
-                        <div class="history-main">${row.weight}kg / ${row.fat_pc}% / ${row.muscle}kg</div>
+                        <span class="history-date">${h.date}</span>
+                        <span>${h.weight}kg / ${h.muscle}kg</span>
                     </div>
                 `).join('');
             } else {
                 document.getElementById('history-list').innerText = "まだ記録がありません。";
             }
-
             document.getElementById('loader').style.display = "none";
-            document.getElementById('content').style.display = "block";
-        } catch (e) {
-            document.getElementById('loader').innerText = "エラーが発生しました。";
+            document.getElementById('main-content').style.display = "block";
+        } catch (e) { 
+            document.getElementById('loader').innerText = "データ取得エラー"; 
         }
     }
     init();
 </script>
-</body>
-</html>
