@@ -3,63 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マイデータ - 身体データフルログ</title>
+    <title>身体データ・究極ログ</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        :root { --main-grad: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%); --bg-color: #f7fafc; }
-        body { font-family: -apple-system, "Helvetica Neue", sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; display: flex; justify-content: center; color: #2d3748; }
-        .card { background: white; width: 100%; max-width: 400px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.07); overflow: hidden; display: flex; flex-direction: column; max-height: 95vh; }
+        :root { --main-grad: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%); --bg: #f8fafc; --text: #2d3748; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 12px; display: flex; justify-content: center; color: var(--text); }
+        .card { background: white; width: 100%; max-width: 420px; border-radius: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; max-height: 96vh; }
         
-        .header { background: var(--main-grad); color: white; padding: 20px; text-align: center; flex-shrink: 0; }
-        .header h1 { margin: 0; font-size: 18px; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0; font-size: 11px; opacity: 0.9; }
+        /* Header */
+        .header { background: var(--main-grad); color: white; padding: 18px; text-align: center; flex-shrink: 0; }
+        .header h1 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 1px; }
+        .header p { margin: 4px 0 0; font-size: 11px; opacity: 0.9; }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #fff; flex-shrink: 0; }
-        .stat-card { background: #f8fafc; padding: 10px; border-radius: 15px; text-align: center; border: 1px solid #edf2f7; }
-        .stat-label { font-size: 9px; color: #718096; margin-bottom: 2px; }
+        /* Main Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #fff; }
+        .stat-card { background: #f1f5f9; padding: 10px; border-radius: 18px; text-align: center; }
+        .stat-label { font-size: 9px; color: #64748b; margin-bottom: 2px; }
         .stat-value { font-size: 16px; font-weight: 800; }
-        .stat-unit { font-size: 9px; margin-left: 2px; color: #a0aec0; }
+        .stat-unit { font-size: 9px; margin-left: 1px; color: #94a3b8; }
 
-        .history-section { flex-grow: 1; overflow-y: auto; padding: 10px 15px 20px; background: #fff; }
-        .history-title { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        /* Timeline */
+        .history-section { flex-grow: 1; overflow-y: auto; padding: 5px 12px 20px; background: #fff; }
+        .history-title { font-size: 13px; font-weight: bold; padding: 10px 5px; color: #475569; display: flex; justify-content: space-between; }
         
-        .history-card { background: white; border: 1px solid #f0f4f8; border-radius: 18px; padding: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #edf2f7; padding-bottom: 8px; margin-bottom: 10px; }
-        .history-date { font-size: 11px; color: #a0aec0; font-weight: 600; }
+        .history-card { background: white; border: 1px solid #f1f5f9; border-radius: 20px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .date-badge { font-size: 10px; font-weight: 700; color: #94a3b8; }
+        .index-badge { font-size: 9px; background: #f0fff4; color: #38a169; padding: 2px 10px; border-radius: 10px; font-weight: bold; }
         
-        /* 全項目を表示するためのグリッドレイアウト */
-        .history-body { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 15px; }
-        .history-item { font-size: 11px; display: flex; justify-content: space-between; align-items: center; padding: 2px 0; border-bottom: 1px solid #fafafa; }
-        .h-label { color: #a0aec0; font-size: 9px; }
-        .h-val { font-weight: 600; color: #4a5568; }
-        .h-unit { font-size: 8px; color: #cbd5e0; margin-left: 1px; }
+        /* 6分割データグリッド */
+        .data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #f8fafc; }
+        .data-item { text-align: center; }
+        .d-label { font-size: 8px; color: #94a3b8; display: block; }
+        .d-val { font-size: 11px; font-weight: 700; color: #475569; }
+        .d-unit { font-size: 8px; font-weight: normal; margin-left: 1px; }
 
-        #loader { padding: 50px; text-align: center; color: #48bb78; font-weight: bold; }
+        /* 血液検査・リブレ用 */
+        .extra-info { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f8fafc; }
+        .info-pill { flex: 1; background: #fff5f5; border-radius: 8px; padding: 4px 8px; font-size: 10px; display: flex; justify-content: space-between; }
+        .pill-label { color: #e53e3e; font-weight: bold; }
+
+        /* 運動・体調報告エリア */
+        .report-box { margin-top: 8px; background: #fdfcf6; border-radius: 12px; padding: 8px 12px; border-left: 3px solid #ecc94b; }
+        .report-label { font-size: 9px; color: #b7791f; font-weight: bold; display: block; margin-bottom: 2px; }
+        .report-text { font-size: 11px; color: #744210; line-height: 1.4; }
+
+        #loader { padding: 60px; text-align: center; color: #4fd1c5; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div class="header">
-        <h1>📊 身体データダッシュボード</h1>
-        <p id="user-display-name">同期中...</p>
+        <h1>📊 身体データ究極ログ</h1>
+        <p id="user-display-name">Syncing...</p>
     </div>
 
-    <div id="loader">データを取得しています...</div>
+    <div id="loader">最新のデータを取得中...</div>
 
     <div id="content" style="display:none;">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">最新の体重</div><div class="stat-value" id="val-weight">--</div></div>
+            <div class="stat-card"><div class="stat-label">最新体重</div><div class="stat-value" id="val-weight">--</div></div>
             <div class="stat-card"><div class="stat-label">筋肉量</div><div class="stat-value" id="val-muscle">--</div></div>
-            <div class="stat-card"><div class="stat-label">体脂肪率</div><div class="stat-value" id="val-fat-rate">--</div></div>
-            <div class="stat-card"><div class="stat-label">体脂肪量</div><div class="stat-value" id="val-fat-mass">--</div></div>
         </div>
 
         <div class="history-section">
-            <div class="history-title">
-                <span>詳細タイムライン</span>
-                <span style="font-size: 9px; font-weight: normal; color: #a0aec0;">全項目表示</span>
-            </div>
+            <div class="history-title"><span>タイムライン</span></div>
             <div id="history-list"></div>
         </div>
     </div>
@@ -74,38 +83,55 @@
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
-            document.getElementById('user-display-name').innerText = profile.displayName + " さんの身体ログ";
+            document.getElementById('user-display-name').innerText = profile.displayName + " さんのパーソナルログ";
 
             const response = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
             const data = await response.json();
 
             if (data && data.length > 0) {
-                // 最新データの反映
                 const latest = data[0];
-                document.getElementById('val-weight').innerHTML = `${latest.weight}<span class="stat-unit">kg</span>`;
-                document.getElementById('val-muscle').innerHTML = `${latest.muscle}<span class="stat-unit">kg</span>`;
-                document.getElementById('val-fat-rate').innerHTML = `${latest.fat_pc}<span class="stat-unit">%</span>`;
-                document.getElementById('val-fat-mass').innerHTML = `${latest.fat_kg}<span class="stat-unit">kg</span>`;
+                document.getElementById('val-weight').innerHTML = `${latest.weight || '--'}<span class="stat-unit">kg</span>`;
+                document.getElementById('val-muscle').innerHTML = `${latest.muscle || '--'}<span class="stat-unit">kg</span>`;
 
-                // タイムラインに全項目をレンダリング
                 const listElem = document.getElementById('history-list');
                 listElem.innerHTML = data.map((item, index) => {
+                    // スプレッドシートの各項目を安全に取得（空の場合は--を表示）
+                    const steps = item.steps || '--';
+                    const fat = item.fat_pc || '--';
+                    const fat_kg = item.fat_kg || '--';
+                    const water = item.water_pc || '--';
+                    const protein = item.protein_pc || '--';
+                    const libre = item.libre || '--';
+                    const blood = item.blood || '--';
+                    const report = item.report || item.exercise || ""; // 運動報告
+
                     return `
                         <div class="history-card">
                             <div class="history-header">
-                                <span class="history-date">🗓 ${item.date}</span>
-                                <span style="font-size: 9px; background: #ebf8ff; color: #3182ce; padding: 2px 8px; border-radius: 10px;">ENTRY #${data.length - index}</span>
+                                <span class="date-badge">🗓 ${item.date}</span>
+                                <span class="index-badge">LOG #${data.length - index}</span>
                             </div>
-                            <div class="history-body">
-                                <div class="history-item"><span class="h-label">体重</span><span class="h-val">${item.weight}<span class="h-unit">kg</span></span></div>
-                                <div class="history-item"><span class="h-label">筋肉量</span><span class="h-val">${item.muscle}<span class="h-unit">kg</span></span></div>
-                                <div class="history-item"><span class="h-label">体脂肪率</span><span class="h-val">${item.fat_pc}<span class="h-unit">%</span></span></div>
-                                <div class="history-item"><span class="h-label">体脂肪量</span><span class="h-val">${item.fat_kg}<span class="h-unit">kg</span></span></div>
-                                <div class="history-item"><span class="h-label">水分率</span><span class="h-val">${item.water_pc || '--'}<span class="h-unit">%</span></span></div>
-                                <div class="history-item"><span class="h-label">たんぱく率</span><span class="h-val">${item.protein_pc || '--'}<span class="h-unit">%</span></span></div>
-                                <div class="history-item"><span class="h-label">歩数</span><span class="h-val">${item.steps || '--'}<span class="h-unit">歩</span></span></div>
-                                <div class="history-item"><span class="h-label">運動</span><span class="h-val" style="font-size:9px;">${item.exercise ? '記録有' : '--'}</span></div>
+                            
+                            <div class="data-grid">
+                                <div class="data-item"><span class="d-label">体重</span><span class="d-val">${item.weight}<span class="d-unit">kg</span></span></div>
+                                <div class="data-item"><span class="d-label">筋肉量</span><span class="d-val">${item.muscle}<span class="h-unit">kg</span></span></div>
+                                <div class="data-item"><span class="d-label">歩数</span><span class="d-val">${steps}<span class="d-unit">歩</span></span></div>
+                                <div class="data-item"><span class="d-label">体脂肪率</span><span class="d-val">${fat}<span class="d-unit">%</span></span></div>
+                                <div class="data-item"><span class="d-label">水分率</span><span class="d-val">${water}<span class="d-unit">%</span></span></div>
+                                <div class="data-item"><span class="d-label">たんぱく</span><span class="d-val">${protein}<span class="d-unit">%</span></span></div>
                             </div>
+
+                            <div class="extra-info">
+                                <div class="info-pill"><span class="pill-label">リブレ</span><span>${libre}</span></div>
+                                <div class="info-pill"><span class="pill-label" style="color:#3182ce;">血液</span><span>${blood}</span></div>
+                            </div>
+
+                            ${report ? `
+                                <div class="report-box">
+                                    <span class="report-label">報告メモ</span>
+                                    <div class="report-text">${report}</div>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
@@ -114,7 +140,7 @@
                 document.getElementById('content').style.display = 'flex';
                 document.getElementById('content').style.flexDirection = 'column';
             } else {
-                document.getElementById('loader').innerText = "データがありません。NFCで記録を開始しましょう！";
+                document.getElementById('loader').innerText = "データがまだありません。";
             }
         } catch (error) {
             document.getElementById('loader').innerText = "通信エラーが発生しました。";
