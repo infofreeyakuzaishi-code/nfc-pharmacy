@@ -5,47 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>身体データ・究極ログ</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --main-grad: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%); --bg: #f0f4f8; --text: #2d3748; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; color: var(--text); }
         .card { background: white; width: 100%; max-width: 420px; border-radius: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 97vh; }
-        
         .header { background: var(--main-grad); color: white; padding: 20px 15px; text-align: center; flex-shrink: 0; }
-        .header h1 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: 1px; }
-        .header p { margin: 4px 0 0; font-size: 11px; opacity: 0.9; }
-
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; background: #fff; border-bottom: 1px solid #f0f4f8; }
-        .stat-card { background: #f8fafc; padding: 12px; border-radius: 20px; text-align: center; border: 1px solid #edf2f7; }
-        .stat-label { font-size: 10px; color: #64748b; margin-bottom: 2px; }
-        .stat-value { font-size: 18px; font-weight: 800; color: #2d3748; }
-        .stat-unit { font-size: 10px; margin-left: 2px; color: #94a3b8; }
-
-        .history-section { flex-grow: 1; overflow-y: auto; padding: 10px 15px 25px; background: #fff; }
-        .history-title { font-size: 14px; font-weight: bold; padding: 5px 5px 15px; color: #475569; display: flex; align-items: center; gap: 8px; }
+        .header h1 { margin: 0; font-size: 19px; font-weight: 800; }
         
-        .history-card { background: white; border: 1px solid #f1f5f9; border-radius: 24px; padding: 15px; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .date-badge { font-size: 11px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
-        .index-badge { font-size: 9px; background: #e6fffa; color: #319795; padding: 3px 12px; border-radius: 12px; font-weight: bold; border: 1px solid #b2f5ea; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #fff; border-bottom: 1px solid #f0f4f8; }
+        .stat-card { background: #f8fafc; padding: 10px; border-radius: 18px; text-align: center; border: 1px solid #edf2f7; }
+        .stat-label { font-size: 9px; color: #64748b; margin-bottom: 2px; }
+        .stat-value { font-size: 16px; font-weight: 800; color: #2d3748; }
+        .stat-unit { font-size: 9px; margin-left: 2px; color: #94a3b8; }
+
+        .chart-container { padding: 15px; background: #fff; border-bottom: 1px solid #f0f4f8; display: none; }
+        .chart-title { font-size: 12px; font-weight: bold; color: #4fd1c5; margin-bottom: 8px; text-align: center;}
+
+        .history-section { flex-grow: 1; overflow-y: auto; padding: 10px 15px; background: #fff; }
+        .history-card { background: white; border: 1px solid #f1f5f9; border-radius: 20px; padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .date-badge { font-size: 10px; font-weight: 700; color: #94a3b8; }
         
-        .data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px 0; }
-        .data-item { text-align: center; }
-        .d-label { font-size: 9px; color: #94a3b8; display: block; margin-bottom: 2px; }
-        .d-val { font-size: 13px; font-weight: 700; color: #475569; }
-        .d-unit { font-size: 9px; font-weight: normal; margin-left: 1px; color: #cbd5e0; }
+        .data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .d-label { font-size: 8px; color: #94a3b8; display: block; }
+        .d-val { font-size: 12px; font-weight: 700; color: #475569; }
+        .extra-row { display: flex; gap: 5px; margin-top: 8px; }
+        .pill { flex: 1; padding: 5px; border-radius: 10px; font-size: 9px; text-align: center; border: 1px solid transparent; }
+        .pill-libre { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
+        .pill-blood { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
+        .report-box { margin-top: 8px; background: #fffaf0; border-radius: 12px; padding: 8px; border: 1px solid #fef3c7; font-size: 10px; }
 
-        .extra-row { display: flex; gap: 8px; margin-top: 10px; }
-        .pill { flex: 1; padding: 6px 10px; border-radius: 12px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .pill-libre { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
-        .pill-blood { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
-        .pill-label { font-weight: bold; font-size: 9px; }
-
-        .report-box { margin-top: 12px; background: #fffaf0; border-radius: 15px; padding: 10px 12px; border: 1px solid #fef3c7; position: relative; }
-        .report-box::before { content: '💬'; position: absolute; left: -8px; top: -8px; font-size: 16px; }
-        .report-text { font-size: 11px; color: #92400e; line-height: 1.5; font-weight: 500; }
-
-        #loader { padding: 80px 20px; text-align: center; color: #4fd1c5; }
-        .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #4fd1c5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        #loader { padding: 50px; text-align: center; color: #4fd1c5; }
+        .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #4fd1c5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -53,25 +45,26 @@
 
 <div class="card">
     <div class="header">
-        <h1>📊 身体データ究極ログ</h1>
-        <p id="user-display-name">データ同期中...</p>
+        <h1 id="user-name">📊 身体ログ</h1>
+        <p id="sub-text">読み込み中...</p>
     </div>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <p>最新のログを取得しています...</p>
-    </div>
+    <div id="loader"><div class="spinner"></div><p>データを取得中...</p></div>
 
     <div id="content" style="display:none;">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">最新体重</div><div class="stat-value" id="val-weight">--</div></div>
-            <div class="stat-card"><div class="stat-label">最新筋肉量</div><div class="stat-value" id="val-muscle">--</div></div>
+            <div class="stat-card"><div class="stat-label">最新体重</div><div class="stat-value" id="v-w">--</div><span class="stat-unit">kg</span></div>
+            <div class="stat-card"><div class="stat-label">体脂肪率</div><div class="stat-value" id="v-f">--</div><span class="stat-unit">%</span></div>
+            <div class="stat-card"><div class="stat-label">筋肉量</div><div class="stat-value" id="v-m">--</div><span class="stat-unit">kg</span></div>
+            <div class="stat-card"><div class="stat-label">水分率</div><div class="stat-value" id="v-wa">--</div><span class="stat-unit">%</span></div>
         </div>
 
-        <div class="history-section">
-            <div class="history-title">🕒 タイムライン履歴</div>
-            <div id="history-list"></div>
+        <div class="chart-container" id="chart-area">
+            <div class="chart-title">📈 体重推移</div>
+            <canvas id="weightChart"></canvas>
         </div>
+
+        <div class="history-section" id="history-list"></div>
     </div>
 </div>
 
@@ -84,68 +77,81 @@
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
-            document.getElementById('user-display-name').innerText = profile.displayName + " さんのパーソナルログ";
+            document.getElementById('sub-text').innerText = profile.displayName + " さんの履歴";
 
             const response = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
             const data = await response.json();
 
             if (data && data.length > 0) {
-                // 最新データの更新
-                const latest = data[0];
-                document.getElementById('val-weight').innerHTML = `${latest.weight || '--'}<span class="stat-unit">kg</span>`;
-                document.getElementById('val-muscle').innerHTML = `${latest.muscle || '--'}<span class="stat-unit">kg</span>`;
+                // 最新4項目の反映
+                const L = data[0];
+                document.getElementById('v-w').innerText = L.weight || '--';
+                document.getElementById('v-f').innerText = L.fat_pc || '--';
+                document.getElementById('v-m').innerText = L.muscle || '--';
+                document.getElementById('v-wa').innerText = L.water_pc || '--';
 
-                const listElem = document.getElementById('history-list');
-                listElem.innerHTML = data.map((item, index) => {
-                    // スプレッドシートの項目名に厳密に対応させる
-                    const steps = item.steps || '--';
-                    const fat = item.fat_pc || '--';
-                    const fat_kg = item.fat_kg || '--';
-                    const water = item.water_pc || '--';
-                    const protein = item.protein_pc || '--';
-                    const libre = item.libre || '--';
-                    const blood = item.blood || '--';
-                    const report = item.report || item.exercise || item.memo || ""; 
+                // 2回以上データがあればグラフを表示
+                if (data.length >= 2) {
+                    document.getElementById('chart-area').style.display = 'block';
+                    drawChart(data);
+                }
 
-                    return `
-                        <div class="history-card">
-                            <div class="history-header">
-                                <span class="date-badge">📅 ${item.date}</span>
-                                <span class="index-badge">ENTRY #${data.length - index}</span>
-                            </div>
-                            
-                            <div class="data-grid">
-                                <div class="data-item"><span class="d-label">体重</span><span class="d-val">${item.weight || '--'}<span class="d-unit">kg</span></span></div>
-                                <div class="data-item"><span class="d-label">体脂肪</span><span class="d-val">${fat}<span class="d-unit">%</span></span></div>
-                                <div class="data-item"><span class="d-label">脂肪量</span><span class="d-val">${fat_kg}<span class="d-unit">kg</span></span></div>
-                                <div class="data-item"><span class="d-label">筋肉量</span><span class="d-val">${item.muscle || '--'}<span class="d-unit">kg</span></span></div>
-                                <div class="data-item"><span class="d-label">水分</span><span class="d-val">${water}<span class="d-unit">%</span></span></div>
-                                <div class="data-item"><span class="d-label">歩数</span><span class="d-val" style="color:#2b6cb0;">${steps}<span class="d-unit">歩</span></span></div>
-                            </div>
-
-                            <div class="extra-row">
-                                <div class="pill pill-libre"><span class="pill-label">リブレ</span><span>${libre}</span></div>
-                                <div class="pill pill-blood"><span class="pill-label">血液</span><span>${blood}</span></div>
-                            </div>
-
-                            ${report ? `
-                                <div class="report-box">
-                                    <div class="report-text">${report}</div>
-                                </div>
-                            ` : ''}
+                // 履歴カードの生成
+                document.getElementById('history-list').innerHTML = data.map((item, i) => `
+                    <div class="history-card">
+                        <div class="history-header">
+                            <span class="date-badge">📅 ${item.fullDate}</span>
+                            <span style="font-size:9px; color:#4fd1c5;">ENTRY #${data.length - i}</span>
                         </div>
-                    `;
-                }).join('');
+                        <div class="data-grid">
+                            <div class="data-item"><span class="d-label">体重</span><span class="d-val">${item.weight}kg</span></div>
+                            <div class="data-item"><span class="d-label">体脂肪</span><span class="d-val">${item.fat_pc}%</span></div>
+                            <div class="data-item"><span class="d-label">筋肉量</span><span class="d-val">${item.muscle}kg</span></div>
+                            <div class="data-item"><span class="d-label">歩数</span><span class="d-val" style="color:#2b6cb0;">${item.steps}歩</span></div>
+                            <div class="data-item"><span class="d-label">水分</span><span class="d-val">${item.water_pc}%</span></div>
+                            <div class="data-item"><span class="d-label">たんぱく</span><span class="d-val">${item.protein_pc}%</span></div>
+                        </div>
+                        <div class="extra-row">
+                            <div class="pill pill-libre">リブレ: ${item.libre || '--'}</div>
+                            <div class="pill pill-blood">血液: ${item.blood || '--'}</div>
+                        </div>
+                        ${item.report ? `<div class="report-box">${item.report}</div>` : ''}
+                    </div>
+                `).join('');
 
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('content').style.display = 'flex';
-                document.getElementById('content').style.flexDirection = 'column';
-            } else {
-                document.getElementById('loader').innerHTML = "<p>データがまだありません。<br>NFCタグで最初の記録を行いましょう！</p>";
+                document.getElementById('content').style.display = 'block';
             }
-        } catch (error) {
-            document.getElementById('loader').innerText = "通信エラーが発生しました。スプレッドシートの設定を確認してください。";
-        }
+        } catch (e) { document.getElementById('loader').innerText = "通信エラー"; }
+    }
+
+    function drawChart(data) {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        const revData = [...data].reverse(); // 古い順に並び替え
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: revData.map(d => d.date),
+                datasets: [{
+                    label: '体重(kg)',
+                    data: revData.map(d => d.weight),
+                    borderColor: '#4fd1c5',
+                    backgroundColor: 'rgba(79, 209, 197, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: false, grid: { color: '#f0f4f8' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
     window.onload = init;
 </script>
