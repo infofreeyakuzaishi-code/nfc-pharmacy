@@ -2,41 +2,43 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>身体データ・究極ログ</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --main-grad: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%); --bg: #f0f4f8; --text: #2d3748; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; color: var(--text); }
-        .card { background: white; width: 100%; max-width: 420px; border-radius: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 97vh; }
-        .header { background: var(--main-grad); color: white; padding: 20px 15px; text-align: center; flex-shrink: 0; }
-        .header h1 { margin: 0; font-size: 19px; font-weight: 800; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text); height: 100vh; overflow: hidden; }
         
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #fff; border-bottom: 1px solid #f0f4f8; }
-        .stat-card { background: #f8fafc; padding: 10px; border-radius: 18px; text-align: center; border: 1px solid #edf2f7; }
-        .stat-label { font-size: 9px; color: #64748b; margin-bottom: 2px; }
+        .card { 
+            background: white; width: 100%; max-width: 420px; display: flex; flex-direction: column; 
+            height: 100vh; height: -webkit-fill-available; box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header { background: var(--main-grad); color: white; padding: 15px; text-align: center; flex-shrink: 0; }
+        .header h1 { margin: 0; font-size: 18px; font-weight: 800; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #fff; flex-shrink: 0; border-bottom: 1px solid #eee; }
+        .stat-card { background: #f8fafc; padding: 8px; border-radius: 15px; text-align: center; border: 1px solid #edf2f7; }
+        .stat-label { font-size: 9px; color: #64748b; }
         .stat-value { font-size: 16px; font-weight: 800; color: #2d3748; }
-        .stat-unit { font-size: 9px; margin-left: 2px; color: #94a3b8; }
 
-        .chart-container { padding: 15px; background: #fff; border-bottom: 1px solid #f0f4f8; display: none; }
-        .chart-title { font-size: 12px; font-weight: bold; color: #4fd1c5; margin-bottom: 8px; text-align: center;}
-
-        .history-section { flex-grow: 1; overflow-y: auto; padding: 10px 15px; background: #fff; }
-        .history-card { background: white; border: 1px solid #f1f5f9; border-radius: 20px; padding: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .date-badge { font-size: 10px; font-weight: 700; color: #94a3b8; }
+        .chart-container { padding: 10px; background: #fff; border-bottom: 1px solid #f0f4f8; flex-shrink: 0; height: 160px; display: none; }
         
+        /* ここが重要：履歴リストだけをスクロールさせる */
+        .history-section { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 15px 80px; background: #fff; }
+        
+        .history-card { background: white; border: 1px solid #f1f5f9; border-radius: 18px; padding: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .history-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .date-badge { font-size: 10px; font-weight: 700; color: #94a3b8; }
         .data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .d-label { font-size: 8px; color: #94a3b8; display: block; }
-        .d-val { font-size: 12px; font-weight: 700; color: #475569; }
+        .d-val { font-size: 11px; font-weight: 700; color: #475569; }
         .extra-row { display: flex; gap: 5px; margin-top: 8px; }
-        .pill { flex: 1; padding: 5px; border-radius: 10px; font-size: 9px; text-align: center; border: 1px solid transparent; }
-        .pill-libre { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
-        .pill-blood { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
-        .report-box { margin-top: 8px; background: #fffaf0; border-radius: 12px; padding: 8px; border: 1px solid #fef3c7; font-size: 10px; }
+        .pill { flex: 1; padding: 4px; border-radius: 8px; font-size: 9px; text-align: center; border: 1px solid #eee; }
+        .report-box { margin-top: 8px; background: #fffaf0; border-radius: 10px; padding: 8px; font-size: 10px; border: 1px solid #fef3c7; }
 
-        #loader { padding: 50px; text-align: center; color: #4fd1c5; }
+        #loader { padding: 100px 0; text-align: center; color: #4fd1c5; }
         .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #4fd1c5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -46,21 +48,20 @@
 <div class="card">
     <div class="header">
         <h1 id="user-name">📊 身体ログ</h1>
-        <p id="sub-text">読み込み中...</p>
+        <p id="sub-text" style="margin:2px 0 0; font-size:11px; opacity:0.8;">読み込み中...</p>
     </div>
 
-    <div id="loader"><div class="spinner"></div><p>データを取得中...</p></div>
+    <div id="loader"><div class="spinner"></div><p>同期中...</p></div>
 
-    <div id="content" style="display:none;">
+    <div id="content" style="display:none; flex-direction:column; height:100%;">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">最新体重</div><div class="stat-value" id="v-w">--</div><span class="stat-unit">kg</span></div>
-            <div class="stat-card"><div class="stat-label">体脂肪率</div><div class="stat-value" id="v-f">--</div><span class="stat-unit">%</span></div>
-            <div class="stat-card"><div class="stat-label">筋肉量</div><div class="stat-value" id="v-m">--</div><span class="stat-unit">kg</span></div>
-            <div class="stat-card"><div class="stat-label">水分率</div><div class="stat-value" id="v-wa">--</div><span class="stat-unit">%</span></div>
+            <div class="stat-card"><div class="stat-label">最新体重</div><div class="stat-value"><span id="v-w">--</span><small style="font-size:9px;">kg</small></div></div>
+            <div class="stat-card"><div class="stat-label">体脂肪率</div><div class="stat-value"><span id="v-f">--</span><small style="font-size:9px;">%</small></div></div>
+            <div class="stat-card"><div class="stat-label">筋肉量</div><div class="stat-value"><span id="v-m">--</span><small style="font-size:9px;">kg</small></div></div>
+            <div class="stat-card"><div class="stat-label">水分率</div><div class="stat-value"><span id="v-wa">--</span><small style="font-size:9px;">%</small></div></div>
         </div>
 
         <div class="chart-container" id="chart-area">
-            <div class="chart-title">📈 体重推移</div>
             <canvas id="weightChart"></canvas>
         </div>
 
@@ -77,79 +78,72 @@
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
-            document.getElementById('sub-text').innerText = profile.displayName + " さんの履歴";
+            document.getElementById('sub-text').innerText = profile.displayName + " さんの全記録";
 
             const response = await fetch(`${GAS_URL}?type=getVitalData&userId=${profile.userId}`);
             const data = await response.json();
 
             if (data && data.length > 0) {
-                // 最新4項目の反映
+                // 最新サマリー
                 const L = data[0];
                 document.getElementById('v-w').innerText = L.weight || '--';
                 document.getElementById('v-f').innerText = L.fat_pc || '--';
                 document.getElementById('v-m').innerText = L.muscle || '--';
                 document.getElementById('v-wa').innerText = L.water_pc || '--';
 
-                // 2回以上データがあればグラフを表示
+                // グラフ表示（直近30件）
                 if (data.length >= 2) {
                     document.getElementById('chart-area').style.display = 'block';
-                    drawChart(data);
+                    drawChart(data.slice(0, 30));
                 }
 
-                // 履歴カードの生成
+                // 全履歴リスト
                 document.getElementById('history-list').innerHTML = data.map((item, i) => `
                     <div class="history-card">
                         <div class="history-header">
                             <span class="date-badge">📅 ${item.fullDate}</span>
-                            <span style="font-size:9px; color:#4fd1c5;">ENTRY #${data.length - i}</span>
+                            <span style="font-size:9px; color:#4fd1c5; font-weight:bold;">#${data.length - i}</span>
                         </div>
                         <div class="data-grid">
                             <div class="data-item"><span class="d-label">体重</span><span class="d-val">${item.weight}kg</span></div>
                             <div class="data-item"><span class="d-label">体脂肪</span><span class="d-val">${item.fat_pc}%</span></div>
                             <div class="data-item"><span class="d-label">筋肉量</span><span class="d-val">${item.muscle}kg</span></div>
-                            <div class="data-item"><span class="d-label">歩数</span><span class="d-val" style="color:#2b6cb0;">${item.steps}歩</span></div>
+                            <div class="data-item"><span class="d-label">歩数</span><span class="d-val">${item.steps}</span></div>
                             <div class="data-item"><span class="d-label">水分</span><span class="d-val">${item.water_pc}%</span></div>
                             <div class="data-item"><span class="d-label">たんぱく</span><span class="d-val">${item.protein_pc}%</span></div>
                         </div>
                         <div class="extra-row">
-                            <div class="pill pill-libre">リブレ: ${item.libre || '--'}</div>
-                            <div class="pill pill-blood">血液: ${item.blood || '--'}</div>
+                            <div class="pill">リブレ: ${item.libre || '--'}</div>
+                            <div class="pill">血液: ${item.blood || '--'}</div>
                         </div>
                         ${item.report ? `<div class="report-box">${item.report}</div>` : ''}
                     </div>
                 `).join('');
 
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
+                document.getElementById('content').style.display = 'flex';
             }
-        } catch (e) { document.getElementById('loader').innerText = "通信エラー"; }
+        } catch (e) { document.getElementById('loader').innerText = "エラー: " + e; }
     }
 
-    function drawChart(data) {
+    function drawChart(recentData) {
         const ctx = document.getElementById('weightChart').getContext('2d');
-        const revData = [...data].reverse(); // 古い順に並び替え
+        const revData = [...recentData].reverse();
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: revData.map(d => d.date),
                 datasets: [{
-                    label: '体重(kg)',
                     data: revData.map(d => d.weight),
                     borderColor: '#4fd1c5',
                     backgroundColor: 'rgba(79, 209, 197, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 2
+                    fill: true, tension: 0.4, borderWidth: 3, pointRadius: 2
                 }]
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { 
-                    y: { beginAtZero: false, grid: { color: '#f0f4f8' } },
-                    x: { grid: { display: false } }
-                }
+                scales: { y: { beginAtZero: false }, x: { grid: { display: false } } }
             }
         });
     }
