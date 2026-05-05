@@ -137,9 +137,36 @@
             slider.style.transform = `translateX(-${currentSlide * 100}%)`;
         }, 3000);
     }
+window.onload = async () => {
+    startSlider();
 
-    window.onload = async () => {
-        startSlider();
+    // 1. LIFFの初期化
+    await liff.init({ liffId: "2009771327-tpjaCzG9" });
+
+    // 2. リッチメニュー経由（action=mycard）の場合の処理
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'mycard') {
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+        }
+        const profile = await liff.getProfile();
+        const userId = profile.userId;
+
+        // GASに自分のitemIDを問い合わせ
+        const res = await fetch(`${GAS_URL}?type=getMyItem&userId=${userId}`);
+        const json = await res.json();
+
+        if (json.itemId) {
+            // 自分のIDが見つかったら、そのURLでリロード
+            window.location.href = `card.html?item=${json.itemId}`;
+            return;
+        } else {
+            alert("カードが登録されていません。NFCカードをかざして初回登録をしてください。");
+            liff.closeWindow();
+            return;
+        }
+    }
         const id = new URLSearchParams(window.location.search).get('item') || "lg-vw7k7t";
         document.getElementById('display-id').innerText = id;
         try {
