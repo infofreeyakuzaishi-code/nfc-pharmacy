@@ -96,7 +96,8 @@
         <div id="after-submit">
             <p style="font-weight: bold; color: #2d3748; margin: 0;">✅ 記録を送信しました</p>
             <p style="font-size: 13px; color: #718096; margin: 5px 0 0;">LINE通知を確認してください。</p>
-            <a href="javascript:void(0);" onclick="https://lin.ee/pfPTQO9" class="line-btn">閉じてLINEへ戻る</a>
+            <!-- ★ここを修正しました -->
+            <a href="https://lin.ee/7glKouU" class="line-btn">閉じてLINEへ戻る</a>
         </div>
         
         <div class="spacer"></div>
@@ -126,7 +127,6 @@
             btn.innerText = "送信中...";
 
             try {
-                // 確実にユーザーIDを取得
                 const profile = await liff.getProfile();
                 const userId = profile.userId;
 
@@ -147,13 +147,11 @@
                     exercise: document.getElementById('exercise').value
                 };
 
-                // GASへ送信 (await を付けて完了を待つ)
                 const response = await fetch(GAS_URL, {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
 
-                // 成功時の演出
                 btn.classList.add('completed');
                 btn.innerText = "送信完了";
                 afterMsg.style.display = 'block';
