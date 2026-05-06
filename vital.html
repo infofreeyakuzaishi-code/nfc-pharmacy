@@ -106,17 +106,16 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-        // LIFF初期化
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: "2009771327-tpjaCzG9" });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                }
-            } catch (err) {
-                console.error("LIFF初期化失敗", err);
-            }
+async function initializeLiff() {
+    try {
+        await liff.init({ liffId: "2009771327-MgOxKU0E" }); // ここをメニュー専用IDに変更
+        if (!liff.isLoggedIn()) {
+            liff.login();
         }
+    } catch (err) {
+        console.error("LIFF初期化失敗", err);
+    }
+}
         initializeLiff();
 
         async function submitData() {
