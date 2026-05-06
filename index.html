@@ -17,30 +17,34 @@
         <div class="spinner"></div>
         <div id="msg">データを送信中...</div>
     </div>
+<script>
+    // 記録専用のLIFF ID (2009771327-tpjaCzG9)
+    const LIFF_ID_RECORD = "2009771327-tpjaCzG9"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-    <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
+    window.onload = async () => {
+        await liff.init({ liffId: LIFF_ID_RECORD });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
 
-        async function main() {
-            await liff.init({ liffId: "2009771327-tpjaCzG9" });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            
-            const profile = await liff.getProfile();
-            const params = new URLSearchParams(window.location.search);
-            const item = params.get('item');
+        const profile = await liff.getProfile();
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('item');
 
-            if (item) {
-                await fetch(GAS_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify({ item: item, userId: profile.userId })
-                });
-                liff.closeWindow();
-            } else {
-                document.getElementById('msg').innerText = "アイテムIDが見つかりません";
-            }
+        if (itemId) {
+            // GASへ記録データを送信
+            await fetch(GAS_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    userId: profile.userId,
+                    item: itemId
+                })
+            });
+            // ★ここが重要：記録が終わったら即座に画面を閉じる
+            liff.closeWindow(); 
+        } else {
+            document.body.innerText = "エラー: IDが見つかりません";
         }
-        main();
-    </script>
-</body>
+    };
+</script>
+   </body>
 </html>
