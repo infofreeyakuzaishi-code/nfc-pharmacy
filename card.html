@@ -131,16 +131,18 @@
         try {
             const res = await fetch(`${GAS_URL}?type=getSettings&item=${id}`);
             const data = await res.json();
-            data.forEach((btn, i) => {
+          data.forEach((btn, i) => {
                 const el = document.getElementById(`slot-${i}`);
                 if (!el) return;
                 if (btn.name !== "未設定") {
                     el.querySelector('.label').innerHTML = `${btn.name}<div class="sub">タップで記録</div>`;
-                    el.onclick = () => { window.location.href = `${LIFF_URL}?item=${btn.id}`; };
+                    // 修正：ボタン固有のID(btn.id)を渡してindex.htmlへ飛ばす
+                    el.onclick = () => { window.location.href = `index.html?item=${btn.id}`; };
                 } else {
                     el.querySelector('.label').innerText = "＋新規登録";
                     el.style.opacity = "0.5";
-                    el.onclick = () => { window.location.href = `${LIFF_URL}?item=${id}`; }; // 自身のIDで登録開始
+                    // 修正：未設定時はそのスロットのIDで登録画面（index）へ
+                    el.onclick = () => { window.location.href = `index.html?item=${btn.id}`; };
                 }
             });
         } catch (e) { console.error(e); }
