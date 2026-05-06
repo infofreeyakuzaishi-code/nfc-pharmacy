@@ -73,7 +73,16 @@
         <button class="stamp-btn" onclick="sendToOA('🤒')">🤒</button>
     </div>
     
-    <button class="action-btn" onclick="location.href='vital.html'">⚖️ 体組成データを入力</button>
+   <!-- 修正：体組成入力へ自分のIDを引き継ぐ -->
+    <button class="action-btn" onclick="goToVital()">⚖️ 体組成データを入力</button>
+
+    <script>
+    function goToVital() {
+        const params = new URLSearchParams(window.location.search);
+        const myId = params.get('item');
+        window.location.href = `vital.html?item=${myId}`;
+    }
+    </script>
     <button class="action-btn" onclick="location.href='https://liff.line.me/2009771327-ZlTtzNT6'">📅 履歴・カレンダー</button>
 
     <div class="section-title">服薬・サプリ記録</div>
