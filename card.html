@@ -141,50 +141,73 @@
 window.onload = async () => {
     startSlider();
 
-    // 1. LIFFの初期化
-    await liff.init({ liffId: "2009771327-tpjaCzG9" });
-
-    // 2. リッチメニュー経由（action=mycard）の場合の処理
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('action') === 'mycard') {
-        if (!liff.isLoggedIn()) {
-            liff.login();
-            return;
-        }
-        const profile = await liff.getProfile();
-        const userId = profile.userId;
+    const action = urlParams.get('action');
+    const itemIdParam = urlParams.get('item');
 
-        // GASに自分のitemIDを問い合わせ
-        const res = await fetch(`${GAS_URL}?type=getMyItem&userId=${userId}`);
-        const json = await res.json();
+    // --- 1. リッチメニューからの流入 (action=mycard) の判定 ---
+    if (action === 'mycard') {
+        try {
+            // LIFF初期化
+            await liff.init({ liffId: "2009771327-tpjaCzG9" });
+            
+            if (!liff.isLoggedIn()) {
+                liff.login(); // ログインしていなければログイン画面へ
+                return;
+            }
 
-        if (json.itemId) {
-            // 自分のIDが見つかったら、そのURLでリロード
-            window.location.href = `card.html?item=${json.itemId}`;
-            return;
-        } else {
-            alert("カードが登録されていません。NFCカードをかざして初回登録をしてください。");
-            liff.closeWindow();
+            const profile = await liff.getProfile();
+            const userId = profile.userId;
+
+            // GASに自分のitemIDを問い合わせ
+            const res = await fetch(`${GAS_URL}?type=getMyItem&userId=${userId}`);
+            const json = await res.json();
+
+            if (json.itemId) {
+                // 自分のIDが見つかったら、そのURLへリダイレクト
+                window.location.href = `card.html?item=${json.itemId}`;
+                return;
+            } else {
+                alert("カードが登録されていません。NFCカードをスマホにかざして、最初にお薬を登録してください。");
+                liff.closeWindow();
+                return;
+            }
+        } catch (err) {
+            console.error("LIFFエラー:", err);
+            // エラー時も一応ローダーを消す
+            document.getElementById('loader').style.display = "none";
             return;
         }
     }
-        const id = new URLSearchParams(window.location.search).get('item') || "lg-vw7k7t";
-        document.getElementById('display-id').innerText = id;
-        try {
-            const res = await fetch(`${GAS_URL}?type=getSettings&item=${id}`);
-            const data = await res.json();
-            data.forEach((btn, i) => {
-                const el = document.getElementById(`slot-${i}`);
-                if (btn.name !== "未設定") {
-                    el.querySelector('.label').innerHTML = `${btn.name}<div class="sub">飲んだらタップ</div>`;
-                } else {
-                    el.querySelector('.label').innerText = "＋新規登録";
-                    el.style.opacity = "0.5";
-                }
-                el.onclick = () => { window.location.href = `${LIFF_URL}?item=${btn.id}`; };
-            });
-        } finally { document.getElementById('loader').style.display = "none"; }
-    };
+
+    // --- 2. 通常のカード表示処理 (NFCをかざした時、またはリダイレクト後) ---
+    const id = itemIdParam || "lg-vw7k7t"; // IDがない時のデフォルト
+    document.getElementById('display-id').innerText = id;
+
+    try {
+        const res = await fetch(`${GAS_URL}?type=getSettings&item=${id}`);
+        const data = await res.json();
+        
+        data.forEach((btn, i) => {
+            const el = document.getElementById(`slot-${i}`);
+            if (!el) return;
+
+            if (btn.name !== "未設定") {
+                el.querySelector('.label').innerHTML = `${btn.name}<div class="sub">飲んだらタップ</div>`;
+            } else {
+                el.querySelector('.label').innerText = "＋新規登録";
+                el.style.opacity = "0.5";
+            }
+            // ボタンタップでLINEに飛ばす（既存のLIFF URLを使用）
+            el.onclick = () => { window.location.href = `${LIFF_URL}?item=${btn.id}`; };
+        });
+    } catch (e) {
+        console.error("データ取得エラー:", e);
+    } finally {
+        // 全て終わったらローダーを消す
+        document.getElementById('loader').style.display = "none";
+    }
+};
 </script>
 </body>
 </html>
