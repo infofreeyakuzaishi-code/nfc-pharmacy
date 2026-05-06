@@ -19,9 +19,10 @@
         
         /* 送信ボタン */
         .btn-submit { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: bold; margin-top: 20px; font-size: 18px; cursor: pointer; transition: all 0.3s; }
+        .btn-submit:disabled { background: #cbd5e0 !important; cursor: not-allowed; }
         .btn-submit.completed { background: #a0aec0 !important; cursor: default; transform: scale(1); }
         
-        /* 完了後のエリア：はみ出し防止のためbox-sizingを徹底 */
+        /* 完了後のエリア */
         #after-submit { 
             display: none; 
             text-align: center; 
@@ -30,7 +31,7 @@
             border-radius: 20px;
             background: #ffffff;
             border: 2px solid #06C755;
-            box-sizing: border-box; /* はみ出し防止 */
+            box-sizing: border-box;
             animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         .line-btn { 
@@ -38,7 +39,7 @@
             align-items: center; 
             justify-content: center; 
             width: 100%; 
-            padding: 16px 0; /* 左右パディングを0にして幅を安定させる */
+            padding: 16px 0;
             background-color: #06C755; 
             color: white; 
             text-decoration: none; 
@@ -46,17 +47,15 @@
             font-weight: bold; 
             font-size: 16px;
             margin-top: 15px;
-            box-sizing: border-box; /* はみ出し防止 */
+            box-sizing: border-box;
             box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
         }
         
-        /* ふわっとしたアニメーション */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* スクロール用の余白（一番下までスクロールしやすくするため） */
         .spacer { height: 50px; }
     </style>
 </head>
@@ -97,7 +96,7 @@
         <div id="after-submit">
             <p style="font-weight: bold; color: #2d3748; margin: 0;">✅ 記録を送信しました</p>
             <p style="font-size: 13px; color: #718096; margin: 5px 0 0;">LINE通知を確認してください。</p>
-            <a href="https://lin.ee/7COjqzB" class="line-btn">LINEへ戻る</a>
+            <a href="javascript:void(0);" onclick="liff.closeWindow();" class="line-btn">閉じてLINEへ戻る</a>
         </div>
         
         <div class="spacer"></div>
@@ -106,9 +105,18 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
-        liff.init({ liffId: "2009771327-tpjaCzG9" }).then(() => {
-            if (!liff.isLoggedIn()) { liff.login(); }
-        });
+        // LIFF初期化
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: "2009771327-tpjaCzG9" });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            } catch (err) {
+                console.error("LIFF初期化失敗", err);
+            }
+        }
+        initializeLiff();
 
         async function submitData() {
             const btn = document.getElementById('submit-btn');
@@ -118,8 +126,9 @@
             btn.innerText = "送信中...";
 
             try {
-                const context = await liff.getContext();
-                const userId = context.userId;
+                // 確実にユーザーIDを取得
+                const profile = await liff.getProfile();
+                const userId = profile.userId;
 
                 const payload = {
                     type: "vital_record",
@@ -138,32 +147,29 @@
                     exercise: document.getElementById('exercise').value
                 };
 
-                fetch(GAS_URL, {
+                // GASへ送信 (await を付けて完了を待つ)
+                const response = await fetch(GAS_URL, {
                     method: "POST",
-                    mode: "no-cors",
                     body: JSON.stringify(payload)
                 });
 
-                // 演出
+                // 成功時の演出
                 btn.classList.add('completed');
                 btn.innerText = "送信完了";
-                
-                // 表示
                 afterMsg.style.display = 'block';
 
-                // より「ふわっ」とスクロールさせるための調整
-                // 要素が現れてから少し待って、中心にくるようにスクロール
                 setTimeout(() => {
                     afterMsg.scrollIntoView({ 
                         behavior: 'smooth', 
-                        block: 'center' // 画面の真ん中に持ってくることで余裕を持たせる
+                        block: 'center' 
                     });
                 }, 400);
 
             } catch (e) {
-                alert("エラーが発生しました。");
+                console.error(e);
+                alert("送信に失敗しました。通信環境を確認してください。");
                 btn.disabled = false;
-                btn.innerText = "再試行";
+                btn.innerText = "データを記録する";
             }
         }
     </script>
