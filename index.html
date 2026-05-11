@@ -18,31 +18,41 @@
         <div id="msg">データを送信中...</div>
     </div>
 <script>
-    // 記録専用のLIFF ID (2009771327-tpjaCzG9)
     const LIFF_ID_RECORD = "2009771327-tpjaCzG9"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec";
 
     window.onload = async () => {
-        await liff.init({ liffId: LIFF_ID_RECORD });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
+        try {
+            await liff.init({ liffId: LIFF_ID_RECORD });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
 
-        const profile = await liff.getProfile();
-        const urlParams = new URLSearchParams(window.location.search);
-        const itemId = urlParams.get('item');
+            const profile = await liff.getProfile();
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemId = urlParams.get('item');
 
-        if (itemId) {
-            // GASへ記録データを送信
-            await fetch(GAS_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    userId: profile.userId,
-                    item: itemId
-                })
-            });
-            // ★ここが重要：記録が終わったら即座に画面を閉じる
-            liff.closeWindow(); 
-        } else {
-            document.body.innerText = "エラー: IDが見つかりません";
+            if (itemId) {
+                // GASへ記録データを送信
+                const response = await fetch(GAS_URL, {
+                    method: "POST",
+                    mode: "no-cors", // GASの仕様上、レスポンス内容を読み取るにはno-corsが必要な場合があります
+                    headers: { "Content-Type": "text/plain" }, // CORS回避のため敢えてtext/plainに
+                    body: JSON.stringify({
+                        userId: profile.userId,
+                        item: itemId
+                    })
+                });
+
+                // 通信完了を待機するための微小なバッファ（0.5秒）
+                setTimeout(() => {
+                    liff.closeWindow(); 
+                }, 500);
+
+            } else {
+                document.getElementById('msg').innerText = "エラー: IDが見つかりません";
+            }
+        } catch (err) {
+            document.getElementById('msg').innerText = "エラーが発生しました: " + err.message;
+            console.error(err);
         }
     };
 </script>
