@@ -99,14 +99,14 @@
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    // ★★★ 重要：ここを新しく作った「メニュー専用ID」に書き換えてください ★★★
     const LIFF_ID_MENU = "2009771327-MgOxKU0E"; 
 
     function sendToOA(txt) { window.location.href = `https://line.me/R/oaMessage/@534uoyka/?${encodeURIComponent(txt)}`; }
 
     function goToVital() {
         const params = new URLSearchParams(window.location.search);
-        const myId = params.get('item') || "lg-vw7k7t"; // IDがない場合のデフォルト
+        const myId = params.get('item');
+        if (!myId) { alert("IDエラーです。NFCをかざし直してください。"); return; }
         window.location.href = `vital.html?item=${myId}`;
     }
 
@@ -115,17 +115,15 @@
         const action = urlParams.get('action');
         const itemIdParam = urlParams.get('item');
 
-        // LIFF初期化（メニュー専用IDを使用）
         await liff.init({ liffId: LIFF_ID_MENU });
         if (!liff.isLoggedIn()) { liff.login(); return; }
 
-        // 1. リッチメニューからの流入 (?action=mycard)
+        // 1. リッチメニューからの流入
         if (action === 'mycard') {
             const profile = await liff.getProfile();
             const res = await fetch(`${GAS_URL}?type=getMyItem&userId=${profile.userId}`);
             const json = await res.json();
             if (json.itemId) {
-                // 自分のIDを見つけたら、そのID付きのURLでリダイレクト
                 window.location.href = `card.html?item=${json.itemId}`;
                 return;
             } else {
@@ -134,8 +132,14 @@
             }
         }
 
-        // 2. カード表示
-        const id = itemIdParam || "lg-vw7k7t";
+        // 2. カード表示：IDがない場合はエラーを出す
+        if (!itemIdParam) {
+            document.getElementById('display-id').innerText = "ID未検出";
+            alert("IDが取得できませんでした。");
+            return;
+        }
+        
+        const id = itemIdParam;
         document.getElementById('display-id').innerText = id;
 
         try {
@@ -144,18 +148,30 @@
             data.forEach((btn, i) => {
                 const el = document.getElementById(`slot-${i}`);
                 if (!el) return;
+
+                // スロット押下時の処理を強化
+                el.onclick = () => {
+                    if (!btn.id || btn.id === "" || btn.id === "undefined") {
+                        // 新規登録の場合
+                        window.location.href = `index.html?item=${id}_slot${i}`; 
+                    } else {
+                        // 既存お薬の記録の場合
+                        window.location.href = `index.html?item=${btn.id}`;
+                    }
+                };
+
                 if (btn.name !== "未設定") {
                     el.querySelector('.label').innerHTML = `${btn.name}<div class="sub">タップで記録</div>`;
-                    // 子ID(btn.id)を渡して、記録専用のindex.htmlへ飛ばす
-                    el.onclick = () => { window.location.href = `index.html?item=${btn.id}`; };
+                    el.style.opacity = "1";
                 } else {
                     el.querySelector('.label').innerText = "＋新規登録";
                     el.style.opacity = "0.5";
-                    // 新規登録もindex.html経由でGASへ飛ばす
-                    el.onclick = () => { window.location.href = `index.html?item=${btn.id}`; };
                 }
             });
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            alert("設定の読み込みに失敗しました。");
+        }
         document.getElementById('loader').style.display = "none";
     };
 </script>
