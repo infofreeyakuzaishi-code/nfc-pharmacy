@@ -26,26 +26,28 @@
 
     window.onload = async () => {
         try {
-            // URLから即座にパラメータを抽出
+            // 1. URLから即座にIDを変数に確保（消える前に！）
             const urlParams = new URLSearchParams(window.location.search);
             const itemId = urlParams.get('item');
 
-            // 【重要】抽出したら即座にURLからパラメータを消去（履歴に残さない）
+            // 2. IDが異常な場合はここで止める（lg-vw7k7tの固定化防止）
+            if (!itemId || itemId === "" || itemId === "undefined" || itemId === "null") {
+                document.getElementById('msg').innerText = "エラー: 有効なIDが見つかりません。";
+                return;
+            }
+
+            // 3. IDを確保した後にURLを綺麗にする
             if (window.history.replaceState) {
                 window.history.replaceState(null, null, window.location.pathname);
             }
 
-            if (!itemId || itemId === "undefined") {
-                document.getElementById('msg').innerText = "エラー: IDが正しくありません。再度読み込んでください。";
-                return;
-            }
-
+            // LIFF初期化
             await liff.init({ liffId: LIFF_ID_RECORD });
             if (!liff.isLoggedIn()) { liff.login(); return; }
 
             const profile = await liff.getProfile();
 
-            // GASのURLにタイムスタンプを付与（キャッシュ回避）
+            // キャッシュ回避用のタイムスタンプ付与
             const finalGasUrl = GAS_URL + "?t=" + new Date().getTime();
 
             // GASへ記録データを送信
@@ -59,10 +61,8 @@
                 })
             });
 
-            // 成功メッセージ表示（安心感のため）
             document.getElementById('msg').innerText = "記録しました！閉じます...";
 
-            // 通信完了後の待機時間を少し確保して閉じる
             setTimeout(() => {
                 liff.closeWindow(); 
             }, 800);
