@@ -4,50 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ろぎてむ 管理カード</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
+        /* デザイン部分は変更なしのため維持 */
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f9; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding-top: 20px; }
         .card { background: white; width: 92%; max-width: 420px; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; position: relative; padding-bottom: 30px; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 35px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
         .header p { margin: 8px 0 0; opacity: 0.8; font-size: 13px; }
-
         .guide-box { background: #ffffff; margin: 20px; padding: 20px; border-radius: 20px; box-shadow: inset 0 0 0 1px #eef2ff, 0 4px 12px rgba(0,0,0,0.03); border-left: 6px solid #667eea; }
         .guide-title { font-size: 14px; font-weight: bold; color: #667eea; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .guide-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
         .guide-num { background: #eef2ff; color: #667eea; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 12px; flex-shrink: 0; margin-top: 2px; }
         .guide-text { font-size: 12.5px; color: #4a5568; line-height: 1.6; }
-        
         .section-title { font-size: 11px; font-weight: bold; color: #a0aec0; margin: 25px 20px 10px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .stamp-grid { display: flex; justify-content: space-around; padding: 0 20px; gap: 10px; margin-bottom: 15px; }
         .stamp-btn { background: white; border: 1px solid #e2e8f0; border-radius: 16px; flex: 1; padding: 12px 0; font-size: 26px; cursor: pointer; transition: 0.2s; }
-
         .action-btn { width: calc(100% - 40px); margin: 0 20px 10px; padding: 14px; border-radius: 16px; border: 1.5px solid #667eea; background: #fff; color: #667eea; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; text-decoration: none; box-sizing: border-box; }
-
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
         .menu-item { background: white; border: 2px solid #f0f4f8; border-radius: 20px; padding: 25px 10px; text-align: center; cursor: pointer; transition: all 0.2s; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .icon { font-size: 32px; margin-bottom: 10px; }
         .label { font-size: 14px; font-weight: bold; color: #2d3748; }
         .sub { font-size: 10px; color: #a0aec0; margin-top: 4px; }
-
         .footer-actions { padding: 25px 20px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-foot { padding: 14px; border-radius: 14px; border: none; font-size: 13px; font-weight: bold; color: white; cursor: pointer; }
         .btn-green { background: #48bb78; }
         .btn-gray { background: #4a5568; }
-
         .slider-container { margin: 0 20px; overflow: hidden; border-radius: 16px; height: 80px; position: relative; }
         .slider-wrapper { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
         .slide { min-width: 100%; height: 100%; }
-
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #667eea; }
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #667eea; }
     </style>
 </head>
 <body>
-
-<div id="loader">Loading...</div>
-
 <div class="card">
+    <div id="loader">Loading...</div>
     <div class="header">
         <h1>ろぎてむ/Loggy-System/</h1>
         <p>ID: <span id="display-id">----</span></p>
@@ -55,25 +45,17 @@
 
     <div class="guide-box">
         <div class="guide-title">✨ つかいかた</div>
-        <div class="guide-item">
-            <div class="guide-num">1</div>
-            <div class="guide-text"><b>ボタンをタップ</b><br>記録したい項目をタップしてください。</div>
-        </div>
-        <div class="guide-item">
-            <div class="guide-num">2</div>
-            <div class="guide-text"><b>LINEで自動記録</b><br>2回目以降はタップだけで即座に記録完了。</div>
-        </div>
+        <div class="guide-item"><div class="guide-num">1</div><div class="guide-text"><b>ボタンをタップ</b><br>記録項目をタップしてください。</div></div>
     </div>
 
-    <div class="section-title">今の気持ちをタップ</div>
     <div class="stamp-grid">
         <button class="stamp-btn" onclick="sendToOA('😊')">😊</button>
         <button class="stamp-btn" onclick="sendToOA('😑')">😑</button>
         <button class="stamp-btn" onclick="sendToOA('😫')">😫</button>
         <button class="stamp-btn" onclick="sendToOA('🤒')">🤒</button>
     </div>
-    
-    <button class="action-btn" onclick="goToVital()">⚖️ 体組成データを入力</button>
+
+    <button class="action-btn" onclick="goToVital()">⚖️ 体組成・身体データを入力</button>
     <button class="action-btn" onclick="location.href='https://liff.line.me/2009771327-ZlTtzNT6'">📅 履歴・カレンダー</button>
 
     <div class="section-title">服薬・サプリ記録</div>
@@ -83,63 +65,23 @@
         <div id="slot-2" class="menu-item"><div class="icon">💊</div><div class="label">読込中</div></div>
         <div id="slot-3" class="menu-item"><div class="icon">💊</div><div class="label">読込中</div></div>
     </div>
-
-    <div class="footer-actions">
-        <button class="btn-foot btn-green" onclick="sendToOA('処方箋を送信')">📸 処方箋送信</button>
-        <button class="btn-foot btn-gray" onclick="sendToOA('薬剤師に相談')">💬 相談する</button>
+    
     </div>
-
-    <div class="slider-container">
-        <div class="slider-wrapper" id="slider">
-            <a href="#" class="slide"><img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/2次検診推奨.png" style="width:100%; height:100%; object-fit:cover;"></a>
-            <a href="#" class="slide"><img src="https://infofreeyakuzaishi-code.github.io/nfc-pharmacy/banner/ライブ配信事務所なかなか.png" style="width:100%; height:100%; object-fit:cover;"></a>
-        </div>
-    </div>
-</div>
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz_ulkMQbEh0DPGJtBi94sUsN4BnJmXVJU9zTdA_t8Cp3L1tPBc3k2Y3tigHdv-Es_G/exec"; 
-    const LIFF_ID_MENU = "2009771327-MgOxKU0E"; 
+    // 記録用LIFFのURL（ここに飛ばすことでindex.htmlが動く）
+    const LIFF_RECORD_URL = "https://liff.line.me/2009771327-tpjaCzG9";
 
     function sendToOA(txt) { window.location.href = `https://line.me/R/oaMessage/@534uoyka/?${encodeURIComponent(txt)}`; }
 
     function goToVital() {
-        const params = new URLSearchParams(window.location.search);
-        const myId = params.get('item');
-        if (!myId) { alert("IDエラーです。NFCをかざし直してください。"); return; }
-        window.location.href = `vital.html?item=${myId}`;
+        const id = new URLSearchParams(window.location.search).get('item') || "lg-vw7k7t";
+        window.location.href = `vital.html?item=${id}`;
     }
 
     window.onload = async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const action = urlParams.get('action');
-        const itemIdParam = urlParams.get('item');
-
-        await liff.init({ liffId: LIFF_ID_MENU });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-
-        // 1. リッチメニューからの流入
-        if (action === 'mycard') {
-            const profile = await liff.getProfile();
-            const res = await fetch(`${GAS_URL}?type=getMyItem&userId=${profile.userId}`);
-            const json = await res.json();
-            if (json.itemId) {
-                window.location.href = `card.html?item=${json.itemId}`;
-                return;
-            } else {
-                alert("登録がありません。NFCをかざしてください。");
-                liff.closeWindow(); return;
-            }
-        }
-
-        // 2. カード表示：IDがない場合はエラーを出す
-        if (!itemIdParam) {
-            document.getElementById('display-id').innerText = "ID未検出";
-            alert("IDが取得できませんでした。");
-            return;
-        }
-        
-        const id = itemIdParam;
+        const id = new URLSearchParams(window.location.search).get('item') || "lg-vw7k7t";
         document.getElementById('display-id').innerText = id;
 
         try {
@@ -149,29 +91,21 @@
                 const el = document.getElementById(`slot-${i}`);
                 if (!el) return;
 
-                // スロット押下時の処理を強化
-                el.onclick = () => {
-                    if (!btn.id || btn.id === "" || btn.id === "undefined") {
-                        // 新規登録の場合
-                        window.location.href = `index.html?item=${id}_slot${i}`; 
-                    } else {
-                        // 既存お薬の記録の場合
-                        window.location.href = `index.html?item=${btn.id}`;
-                    }
-                };
-
                 if (btn.name !== "未設定") {
-                    el.querySelector('.label').innerHTML = `${btn.name}<div class="sub">タップで記録</div>`;
+                    el.querySelector('.label').innerHTML = `${btn.name}<div class="sub">飲んだらタップ</div>`;
                     el.style.opacity = "1";
                 } else {
                     el.querySelector('.label').innerText = "＋新規登録";
                     el.style.opacity = "0.5";
                 }
+                
+                // ★最重要：記録用LIFFへID付きで飛ばす
+                el.onclick = () => { 
+                    const targetId = btn.id || `${id}_slot${i}`;
+                    window.location.href = `${LIFF_RECORD_URL}?item=${targetId}`; 
+                };
             });
-        } catch (e) { 
-            console.error(e);
-            alert("設定の読み込みに失敗しました。");
-        }
+        } catch (e) { console.error(e); }
         document.getElementById('loader').style.display = "none";
     };
 </script>
